@@ -1,0 +1,9 @@
+# Editor specific folder
+.vscode/*
+
+# The buffer library isn't in the current version of Luau
+# so we don't want to include the dev build I'm using
+luau.exe
+
+# Tooling-generated artifacts
+sourcemap.json

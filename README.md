@@ -1,0 +1,19 @@
+# **Bu**ffer **wi**th a **c**ursor (Buwic)
+
+A Luau wrapper for the built-in `buffer` type.
+
+To simplify the implementation and make it as close to baremetal as is possible for Luau, the built-in `buffer` type doesn't provide a cursor. This means that using it for sequential reads and writes requires you to keep track of where you're reading and writing from, as well as the size of the buffer so that you don't overflow.
+
+This module provides a wrapper around the built-in library to give it some new functionality:
+
+- A cursor to keep track of where you're reading and writing from and to
+- Dynamic resizing as you write
+- Functionality to grow or shrink it
+
+This library aims to be as fast as possible, but there is some overhead associated with functions and tables that is not present for pure VM types. As a result, it is quite a bit slower than a raw implementation.
+
+The API is below:
+
+## API
+
+TODO: API

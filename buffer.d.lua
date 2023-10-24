@@ -1,0 +1,55 @@
+declare class buffer end
+
+-- declare buffer: {
+--     create: (size: number) -> buffer,
+--     fromstring: (str: string) -> buffer,
+--     tostring: (buff: buffer) -> string,
+--     len: (buff: buffer) -> number,
+--     copy: (target: buffer, target_offset: number, source: buffer, source_offset: number?, count: number?) -> (),
+--     fill: (buff: buffer, offset: number, value: number, count: number) -> (),
+
+--     readstring: (buff: buffer, offset: number, len: number) -> string,
+--     writestring: (buff: buffer, offset: number, value: string, len: number?) -> (),
+
+--     readi8: (buff: buffer, offset: number) -> number,
+--     readi16: (buff: buffer, offset: number) -> number,
+--     readi32: (buff: buffer, offset: number) -> number,
+--     readu8: (buff: buffer, offset: number) -> number,
+--     readu16: (buff: buffer, offset: number) -> number,
+--     readu32: (buff: buffer, offset: number) -> number,
+--     readf32: (buff: buffer, offset: number) -> number,
+--     readf64: (buff: buffer, offset: number) -> number,
+
+--     writei8: (buff: buffer, offset: number, value: number) -> (),
+--     writei16: (buff: buffer, offset: number, value: number) -> (),
+--     writei32: (buff: buffer, offset: number, value: number) -> (),
+--     writeu8: (buff: buffer, offset: number, value: number) -> (),
+--     writeu16: (buff: buffer, offset: number, value: number) -> (),
+--     writeu32: (buff: buffer, offset: number, value: number) -> (),
+--     writef32: (buff: buffer, offset: number, value: number) -> (),
+--     writef64: (buff: buffer, offset: number, value: number) -> (),
+-- }
+
+declare buffer: {
+    create: (size: number) -> buffer,
+    readi8: (b: buffer, offset: number) -> number,
+    readu8: (b: buffer, offset: number) -> number,
+    writei8: (b: buffer, offset: number, n: number) -> (),
+    writeu8: (b: buffer, offset: number, n: number) -> (),
+    readi16: (b: buffer, offset: number) -> number,
+    readu16: (b: buffer, offset: number) -> number,
+    writei16: (b: buffer, offset: number, n: number) -> (),
+    writeu16: (b: buffer, offset: number, n: number) -> (),
+    readi32: (b: buffer, offset: number) -> number,
+    readu32: (b: buffer, offset: number) -> number,
+    writei32: (b: buffer, offset: number, n: number) -> (),
+    writeu32: (b: buffer, offset: number, n: number) -> (),
+    readf32: (b: buffer, offset: number) -> number,
+    writef32: (b: buffer, offset: number, n: number) -> (),
+    readf64: (b: buffer, offset: number) -> number,
+    writef64: (b: buffer, offset: number, n: number) -> (),
+    readstring: (b: buffer, offset: number, len: number) -> string,
+    writestring: (b: buffer, offset: number, str: string) -> (),
+    len: (b: buffer) -> number,
+    copy: (source: buffer, source_offset: number, count: number, target_offset: number, target: buffer?) -> (),
+}
