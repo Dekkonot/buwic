@@ -14,9 +14,9 @@ local function resizeIfNeeded(buwic: Buwic, more: number)
 	if buwic._cursor + more > len then
 		-- We could resize to the next power of two
 		-- but it's unclear if that's what people want.
-		local new = buffer.create(2 ^ (math.floor(math.log(len + more, 2)) + 1))
-		-- local new = buffer.create(len + more)
-		print(`resizing to {buffer.len(new)} from {len}`)
+		-- local new = buffer.create(2 ^ (math.floor(math.log(len + more, 2)) + 1))
+		local new = buffer.create(len + more)
+		-- print(`resizing to {buffer.len(new)} from {len}`)
 		buffer.copy(new, 0, buwic._inner, 0, len)
 		buwic._inner = new
 	end
@@ -24,7 +24,8 @@ end
 
 function Buwic.new(): Buwic
 	return setmetatable({
-		_inner = buffer.create(4),
+		_inner = buffer.create(0),
+		_len = 0,
 		_cursor = 0,
 	}, Buwic)
 end
@@ -32,6 +33,7 @@ end
 function Buwic.withCapacity(capacity: number): Buwic
 	return setmetatable({
 		_inner = buffer.create(capacity),
+		_len = 0,
 		_cursor = 0,
 	}, Buwic)
 end
@@ -74,7 +76,7 @@ end
 function Buwic.reserve(self: Buwic, more: number)
 	local len = buffer.len(self._inner)
 	local new = buffer.create(len + more)
-	print(`resizing to {buffer.len(new)} from {len}`)
+	-- print(`resizing to {buffer.len(new)} from {len}`)
 	buffer.copy(new, 0, self._inner, 0, len)
 	self._inner = new
 end
@@ -83,7 +85,7 @@ end
 function Buwic.shrink(self: Buwic, less: number)
 	local len = buffer.len(self._inner)
 	local new = buffer.create(math.max(len - less, 0))
-	print(`shrinking to {buffer.len(new)} from {len}`)
+	-- print(`shrinking to {buffer.len(new)} from {len}`)
 	buffer.copy(new, 0, self._inner, 0, len - less)
 	if self._cursor > buffer.len(new) then
 		self._cursor = buffer.len(new)
@@ -91,7 +93,7 @@ function Buwic.shrink(self: Buwic, less: number)
 	self._inner = new
 end
 
--- Contents writers (wrapped around buffer) --
+-- Basic Writers --
 
 function Buwic.writeu8(self: Buwic, n: number)
 	resizeIfNeeded(self, 1)
@@ -115,6 +117,17 @@ function Buwic.writei16(self: Buwic, n: number)
 	resizeIfNeeded(self, 2)
 	buffer.writei16(self._inner, self._cursor, n)
 	self._cursor += 2
+end
+
+function Buwic.writeu24(self: Buwic, n: number)
+	resizeIfNeeded(self, 3)
+	buffer.writeu16(self._inner, self._cursor, n)
+	buffer.writeu8(self._inner, self._cursor + 2, n / 0xFFFF)
+	self._cursor += 3
+end
+
+function Buwic.writei24(_self: Buwic, _n: number)
+	error("Buwic::writei24 is not yet implemented", 2)
 end
 
 function Buwic.writeu32(self: Buwic, n: number)
@@ -141,13 +154,19 @@ function Buwic.writef64(self: Buwic, n: number)
 	self._cursor += 8
 end
 
-function Buwic.writeString(self: Buwic, str: string)
-	resizeIfNeeded(self, #str)
-	buffer.writestring(self._inner, self._cursor, str)
+function Buwic.writeRawString(self: Buwic, str: string, len: number?)
+	resizeIfNeeded(self, len or #str)
+	buffer.writestring(self._inner, self._cursor, str, if len then len else nil)
+end
+
+function Buwic.writeString(self: Buwic, str: string, len: number?)
+	self:writeu24(len or #str)
+	resizeIfNeeded(self, len or #str)
+	buffer.writestring(self._inner, self._cursor, str, if len then len else nil)
 	self._cursor += #str
 end
 
--- Content readers (wrapped around buffer) --
+-- Basic Readers --
 
 function Buwic.readu8(self: Buwic): number
 	local n = buffer.readu8(self._inner, self._cursor)
@@ -171,6 +190,16 @@ function Buwic.readi16(self: Buwic): number
 	local n = buffer.readi16(self._inner, self._cursor)
 	self._cursor += 2
 	return n
+end
+
+function Buwic.readu24(self: Buwic): number
+	local n = buffer.readu16(self._inner, self._cursor)
+	self._cursor += 3
+	return bit32.lshift(buffer.readu8(self._inner, self._cursor - 1), 16) + n
+end
+
+function Buwic.readi24(_self: Buwic): number
+	error("Buwic::readi24 is not yet implemented", 2)
 end
 
 function Buwic.readu32(self: Buwic): number
@@ -197,10 +226,19 @@ function Buwic.readf64(self: Buwic): number
 	return n
 end
 
-function Buwic.readString(self: Buwic, len: number): string
+function Buwic.readRawString(self: Buwic, len: number): string
 	local str = buffer.readstring(self._inner, self._cursor, len)
 	self._cursor += len
 	return str
 end
+
+function Buwic.readString(self: Buwic): string
+	local len = self:readu24()
+	local str = buffer.readstring(self._inner, self._cursor, len)
+	self._cursor += len
+	return str
+end
+
+-- TODO: function for reading and writing vectors
 
 return Buwic
