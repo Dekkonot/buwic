@@ -17,7 +17,7 @@ local function resizeIfNeeded(buwic: Buwic, more: number)
 		local new = buffer.create(2 ^ (math.floor(math.log(len + more, 2)) + 1))
 		-- local new = buffer.create(len + more)
 		print(`resizing to {buffer.len(new)} from {len}`)
-		buffer.copy(buwic._inner, 0, len, 0, new)
+		buffer.copy(new, 0, buwic._inner, 0, len)
 		buwic._inner = new
 	end
 end
@@ -44,7 +44,7 @@ end
 
 function Buwic.fromBuffer(buff: buffer): Buwic
 	local self = Buwic.withCapacity(buffer.len(buff))
-	buffer.copy(buff, 0, buffer.len(buff), 0, self._inner)
+	buffer.copy(self._inner, 0, buff, buffer.len(buff))
 	return self
 end
 
@@ -75,7 +75,7 @@ function Buwic.reserve(self: Buwic, more: number)
 	local len = buffer.len(self._inner)
 	local new = buffer.create(len + more)
 	print(`resizing to {buffer.len(new)} from {len}`)
-	buffer.copy(self._inner, 0, len, 0, new)
+	buffer.copy(new, 0, self._inner, 0, len)
 	self._inner = new
 end
 
@@ -84,7 +84,7 @@ function Buwic.shrink(self: Buwic, less: number)
 	local len = buffer.len(self._inner)
 	local new = buffer.create(math.max(len - less, 0))
 	print(`shrinking to {buffer.len(new)} from {len}`)
-	buffer.copy(self._inner, 0, len - less, 0, new)
+	buffer.copy(new, 0, self._inner, 0, len - less)
 	if self._cursor > buffer.len(new) then
 		self._cursor = buffer.len(new)
 	end
