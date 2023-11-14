@@ -160,13 +160,14 @@ end
 
 function Buwic.writeRawString(self: Buwic, str: string, len: number?)
 	resizeIfNeeded(self, len or #str)
-	buffer.writestring(self._inner, self._cursor, str, if len then len else nil)
+	buffer.writestring(self._inner, self._cursor, str, len)
+	self._cursor += len or #str
 end
 
 function Buwic.writeString(self: Buwic, str: string, len: number?)
 	resizeIfNeeded(self, (len or #str) + 3)
 	self:writeu24(len or #str)
-	buffer.writestring(self._inner, self._cursor, str, if len then len else nil)
+	buffer.writestring(self._inner, self._cursor, str, len)
 	self._cursor += #str
 end
 
