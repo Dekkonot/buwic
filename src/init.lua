@@ -71,7 +71,8 @@ function Buwic.leakInner(self: Buwic): buffer
 	return self._inner
 end
 
--- Non-modifying setters --
+-- Modifying methods --
+
 function Buwic.setCursor(self: Buwic, location: number)
 	self._cursor = location
 end
