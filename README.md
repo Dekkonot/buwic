@@ -1,4 +1,4 @@
-# **Bu**ffer **wi**th a **c**ursor (Buwic)
+# Buffer with a cursor (Buwic)
 
 A Luau wrapper for the built-in `buffer` type.
 
@@ -9,6 +9,13 @@ This module provides a wrapper around the built-in library to give it some new f
 - A cursor to keep track of where you're reading and writing from and to
 - Dynamic resizing as you write
 - Functionality to grow or shrink it
+
+This module **does not** provide the following functionality:
+
+- Base conversion functions like Base64, Base91, etc.
+- Bit-level writes
+
+That functionality dramatically slows complicates this module and slows it down, so it's not provided.
 
 This library aims to be as fast as possible, but there is some overhead associated with functions and tables that is not present for pure VM types. As a result, it is quite a bit slower than a raw implementation.
 
