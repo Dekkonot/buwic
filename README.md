@@ -24,3 +24,13 @@ The API is below:
 ## API
 
 TODO: API
+
+- read/write `u8`, `u16`, `u24`, `u32`
+- read/write `i8`, `i16`, `i24`, `i32`
+- read/write `f32`, `f64`
+
+- read/write length prefixed string
+- read/write 'raw string'
+- read/write buffer
+
+- Roblox stuff
