@@ -67,7 +67,7 @@ function Buwic.getCursor(self: Buwic): number
 	return self._cursor
 end
 
-function Buwic.leakInner(self: Buwic): buffer
+function Buwic.leak(self: Buwic): buffer
 	return self._inner
 end
 
