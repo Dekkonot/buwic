@@ -125,13 +125,13 @@ end
 
 function Buwic.writeu24(self: Buwic, n: number)
 	resizeIfNeeded(self, 3)
-	buffer.writeu16(self._inner, self._cursor, n)
-	buffer.writeu8(self._inner, self._cursor + 2, n / 0xFFFF)
+	buffer.writeu8(self._inner, self._cursor, bit32.band(n, 0xFF))
+	buffer.writeu16(self._inner, self._cursor + 1, bit32.rshift(n, 8))
 	self._cursor += 3
 end
 
-function Buwic.writei24(_self: Buwic, _n: number)
-	error("Buwic::writei24 is not yet implemented", 2)
+function Buwic.writei24(self: Buwic, n: number)
+	self:writeu24(n % 0x1000_000)
 end
 
 function Buwic.writeu32(self: Buwic, n: number)
@@ -202,8 +202,9 @@ function Buwic.readu24(self: Buwic): number
 	return bit32.lshift(buffer.readu8(self._inner, self._cursor - 1), 16) + n
 end
 
-function Buwic.readi24(_self: Buwic): number
-	error("Buwic::readi24 is not yet implemented", 2)
+function Buwic.readi24(self: Buwic): number
+	local n = self:readu24()
+	return if n >= 0x800000 then n - 0x1000000 else n
 end
 
 function Buwic.readu32(self: Buwic): number
