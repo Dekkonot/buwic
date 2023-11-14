@@ -4,10 +4,13 @@
 local Buwic = {}
 Buwic.__index = Buwic
 
-export type Buwic = typeof(setmetatable({} :: {
-	_inner: buffer,
-	_cursor: number,
-}, Buwic))
+export type Buwic = typeof(setmetatable(
+	{} :: {
+		_inner: buffer,
+		_cursor: number,
+	},
+	Buwic
+))
 
 local function resizeIfNeeded(buwic: Buwic, more: number)
 	local len = buffer.len(buwic._inner)
@@ -160,8 +163,8 @@ function Buwic.writeRawString(self: Buwic, str: string, len: number?)
 end
 
 function Buwic.writeString(self: Buwic, str: string, len: number?)
+	resizeIfNeeded(self, (len or #str) + 3)
 	self:writeu24(len or #str)
-	resizeIfNeeded(self, len or #str)
 	buffer.writestring(self._inner, self._cursor, str, if len then len else nil)
 	self._cursor += #str
 end
