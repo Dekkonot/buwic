@@ -170,6 +170,12 @@ function Buwic.writeString(self: Buwic, str: string, len: number?)
 	self._cursor += #str
 end
 
+function Buwic.writeBuffer(self: Buwic, buff: buffer, len: number?)
+	resizeIfNeeded(self, len or buffer.len(buff))
+	buffer.copy(self._inner, self._cursor, buff, 0, len)
+	self._cursor += len or buffer.len(buff)
+end
+
 -- Basic Readers --
 
 function Buwic.readu8(self: Buwic): number
@@ -242,6 +248,13 @@ function Buwic.readString(self: Buwic): string
 	local str = buffer.readstring(self._inner, self._cursor, len)
 	self._cursor += len
 	return str
+end
+
+function Buwic.readBuffer(self: Buwic, len: number): buffer
+	local out = buffer.create(len)
+	buffer.copy(out, 0, self._inner, self._cursor, len)
+	self._cursor += len
+	return out
 end
 
 -- TODO: function for reading and writing vectors
