@@ -158,10 +158,10 @@ function Buwic.writeRawString(self: Buwic, str: string, len: number?)
 end
 
 function Buwic.writeString(self: Buwic, str: string, len: number?)
-	resizeIfNeeded(self, (len or #str) + 3)
-	self:writeu24(len or #str)
-	buffer.writestring(self._buffer, self._cursor, str, len)
-	self._cursor += #str
+	resizeIfNeeded(self, (len or #str) + 4)
+	buffer.writeu32(self._buffer, self._cursor, len or #str)
+	buffer.writestring(self._buffer, self._cursor + 4, str, len)
+	self._cursor += #str + 4
 end
 
 function Buwic.writeBuffer(self: Buwic, buff: buffer, len: number?)
@@ -238,9 +238,9 @@ function Buwic.readRawString(self: Buwic, len: number): string
 end
 
 function Buwic.readString(self: Buwic): string
-	local len = self:readu24()
-	local str = buffer.readstring(self._buffer, self._cursor, len)
-	self._cursor += len
+	local len = buffer.readu32(self._buffer, self._cursor)
+	local str = buffer.readstring(self._buffer, self._cursor + 4, len)
+	self._cursor += len + 4
 	return str
 end
 
