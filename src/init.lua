@@ -25,30 +25,22 @@ local function resizeIfNeeded(buwic: Buwic, more: number)
 	end
 end
 
-function Buwic.new(): Buwic
+function Buwic.new(capacity: number?): Buwic
 	return setmetatable({
-		_inner = buffer.create(0),
-		_len = 0,
-		_cursor = 0,
-	}, Buwic)
-end
-
-function Buwic.withCapacity(capacity: number): Buwic
-	return setmetatable({
-		_inner = buffer.create(capacity),
+		_inner = buffer.create(capacity or 0),
 		_len = 0,
 		_cursor = 0,
 	}, Buwic)
 end
 
 function Buwic.fromString(str: string): Buwic
-	local self = Buwic.withCapacity(#str)
+	local self = Buwic.new(#str)
 	buffer.writestring(self._inner, 0, str)
 	return self
 end
 
 function Buwic.fromBuffer(buff: buffer): Buwic
-	local self = Buwic.withCapacity(buffer.len(buff))
+	local self = Buwic.new(buffer.len(buff))
 	buffer.copy(self._inner, 0, buff, buffer.len(buff))
 	return self
 end
