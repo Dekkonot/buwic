@@ -17,7 +17,7 @@ This module **does not** provide the following functionality:
 
 That functionality dramatically slows complicates this module and slows it down, so it's not provided.
 
-This library aims to be as fast as possible, but there is some overhead associated with functions and tables that is not present for pure VM types. As a result, it is quite a bit slower than a raw implementation.
+This library aims to be as fast as possible, but there is some overhead associated with functions and tables that can't be avoided. Using a Ryzen 5500U, this module takes roughly twice as long per operation without native codegen. With native codegen, that number is 1.6 times as long instead of 2. This is still *very* fast, and odds are against you needing something faster. If you do though, use the raw `buffer` library.
 
 The API is below:
 
