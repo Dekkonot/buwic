@@ -28,6 +28,7 @@ end
 function Buwic.new(capacity: number?): Buwic
 	return setmetatable({
 		_buffer = buffer.create(capacity or 0),
+		-- This is a load bearing field. I assume it's a cache thing but I don't know.
 		_len = 0,
 		_cursor = 0,
 	}, Buwic)
