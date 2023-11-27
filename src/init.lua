@@ -12,6 +12,16 @@ export type Buwic = typeof(setmetatable(
 	Buwic
 ))
 
+local NUMBER_TO_FONTSTYLE = {}
+local NUMBER_TO_FONTWEIGHT = {}
+
+for _, item: Enum.FontStyle in Enum.FontStyle:GetEnumItems() do
+	NUMBER_TO_FONTSTYLE[item.Value] = item
+end
+for _, item: Enum.FontWeight in Enum.FontWeight:GetEnumItems() do
+	NUMBER_TO_FONTWEIGHT[item.Value] = item
+end
+
 local function resizeIfNeeded(buwic: Buwic, more: number)
 	local len = buffer.len(buwic._buffer)
 	if buwic._cursor + more > len then
@@ -371,7 +381,15 @@ function Buwic.writeFaces(self: Buwic, faces: Faces)
 end
 
 function Buwic.writeFont(self: Buwic, font: Font)
-	-- TODO: Font
+	local family = font.Family
+	resizeIfNeeded(self, 6 + #family)
+	local b, c = self._buffer, self._cursor
+
+	buffer.writeu8(b, c, font.Style.Value)
+	buffer.writeu16(b, c + 1, font.Weight.Value)
+	buffer.writeu16(b, c + 3, #family)
+	buffer.writestring(b, c + 5, family)
+	self._cursor += 6 + #family
 end
 
 function Buwic.writeNumberRange(self: Buwic, range: NumberRange) end
@@ -397,5 +415,19 @@ function Buwic.writeVector2int16(self: Buwic, vector: Vector2int16) end
 function Buwic.writeVector3(self: Buwic, vector: Vector3) end
 
 function Buwic.writeVector3int16(self: Buwic, vector: Vector3int16) end
+
+-- Roblox specific readers --
+
+function Buwic.readFont(self: Buwic): Font
+	local b, c = self._buffer, self._cursor
+	local style = NUMBER_TO_FONTSTYLE[buffer.readu8(b, c)]
+	local weight = NUMBER_TO_FONTWEIGHT[buffer.readu16(b, c + 1)]
+	local familyLen = buffer.readu16(b, c + 3)
+	local family = buffer.readstring(b, c + 5, familyLen)
+
+	self._cursor += 5 + familyLen
+
+	return Font.new(family, weight, style)
+end
 
 return Buwic
