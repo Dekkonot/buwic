@@ -415,7 +415,17 @@ end
 
 function Buwic.writePhysicalProperties(self: Buwic, physicalProperties: PhysicalProperties) end
 
-function Buwic.writeRay(self: Buwic, ray: Ray) end
+function Buwic.writeRay(self: Buwic, ray: Ray)
+	resizeIfNeeded(self, 24)
+	local b, c = self._buffer, self._cursor
+	buffer.writef32(b, c, ray.Origin.X)
+	buffer.writef32(b, c + 4, ray.Origin.Y)
+	buffer.writef32(b, c + 8, ray.Origin.Z)
+	buffer.writef32(b, c + 12, ray.Direction.X)
+	buffer.writef32(b, c + 16, ray.Direction.Y)
+	buffer.writef32(b, c + 20, ray.Direction.Z)
+	self._cursor += 24
+end
 
 function Buwic.writeRect(self: Buwic, rect: Rect)
 	resizeIfNeeded(self, 16)
@@ -427,17 +437,57 @@ function Buwic.writeRect(self: Buwic, rect: Rect)
 	self._cursor += 16
 end
 
-function Buwic.writeUDim(self: Buwic, udim: UDim) end
+function Buwic.writeUDim(self: Buwic, udim: UDim)
+	resizeIfNeeded(self, 8)
+	local b, c = self._buffer, self._cursor
+	buffer.writef32(b, c, udim.Scale)
+	buffer.writei32(b, c + 4, udim.Offset)
+	self._cursor += 8
+end
 
-function Buwic.writeUDim2(self: Buwic, udim2: UDim2) end
+function Buwic.writeUDim2(self: Buwic, udim2: UDim2)
+	resizeIfNeeded(self, 16)
+	local b, c = self._buffer, self._cursor
+	buffer.writef32(b, c, udim2.X.Scale)
+	buffer.writei32(b, c + 4, udim2.X.Offset)
+	buffer.writef32(b, c + 8, udim2.Y.Scale)
+	buffer.writei32(b, c + 12, udim2.Y.Offset)
+	self._cursor += 16
+end
 
-function Buwic.writeVector2(self: Buwic, vector: Vector2) end
+function Buwic.writeVector2(self: Buwic, vector: Vector2)
+	resizeIfNeeded(self, 8)
+	local b, c = self._buffer, self._cursor
+	buffer.writef32(b, c, vector.X)
+	buffer.writef32(b, c + 4, vector.Y)
+	self._cursor += 8
+end
 
-function Buwic.writeVector2int16(self: Buwic, vector: Vector2int16) end
+function Buwic.writeVector2int16(self: Buwic, vector: Vector2int16)
+	resizeIfNeeded(self, 4)
+	local b, c = self._buffer, self._cursor
+	buffer.writei16(b, c, vector.X)
+	buffer.writei16(b, c + 2, vector.Y)
+	self._cursor += 4
+end
 
-function Buwic.writeVector3(self: Buwic, vector: Vector3) end
+function Buwic.writeVector3(self: Buwic, vector: Vector3)
+	resizeIfNeeded(self, 12)
+	local b, c = self._buffer, self._cursor
+	buffer.writef32(b, c, vector.X)
+	buffer.writef32(b, c + 4, vector.Y)
+	buffer.writef32(b, c + 8, vector.Z)
+	self._cursor += 12
+end
 
-function Buwic.writeVector3int16(self: Buwic, vector: Vector3int16) end
+function Buwic.writeVector3int16(self: Buwic, vector: Vector3int16)
+	resizeIfNeeded(self, 6)
+	local b, c = self._buffer, self._cursor
+	buffer.writei16(b, c, vector.X)
+	buffer.writei16(b, c + 2, vector.Y)
+	buffer.writei16(b, c + 4, vector.Z)
+	self._cursor += 6
+end
 
 -- Roblox specific readers --
 
