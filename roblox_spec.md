@@ -52,7 +52,7 @@ When serializing a `Color3` as a `Color3uint8`, the value is made via `math.floo
 
 ## ColorSequence
 
-A [`ColorSequence`][ColorSequence_DT] is written in two parts. First is a `u32` indicating how many `ColorSequenceKeypoint`s the sequence has. Each keypoint is written in sequence after that, meaning this data type is dynamically sized.
+A [`ColorSequence`][ColorSequence_DT] is written in two parts. First is a `u32` indicating how many [`ColorSequenceKeypoint`][ColorSequenceKeypoint_DT]s the sequence has. Each keypoint is written in sequence after that, meaning this data type is dynamically sized.
 
 Each `ColorSequenceKeypoint` is written as four `f32`s, representing the `Time`, `Value.R`, `Value.G`, and `Value.B` fields for that keypoint in order.
 
@@ -84,7 +84,7 @@ A [`NumberRange`][NumberRange_DT] is written as two `f32` values representing th
 
 ## NumberSequence
 
-A [`NumberSequence`][NumberSequence_DT] is written in two parts. First is a `u32` indicating how many `NumberSequenceKeypoint`s the sequence has. Each keypoint is written in sequence after that, meaning this data type is dynamically sized.
+A [`NumberSequence`][NumberSequence_DT] is written in two parts. First is a `u32` indicating how many [`NumberSequenceKeypoint`][NumberSequenceKeypoint_DT]s the sequence has. Each keypoint is written in sequence after that, meaning this data type is dynamically sized.
 
 Each `NumberSequenceKeypoint` is written as three `f32`s, representing the `Time`, `Value`, and `Envelope` fields for that keypoint in order.
 
@@ -133,3 +133,32 @@ A [`Vector3`][Vector3_DT] is written as three `f32` values representing the `X`,
 ## Vector3int16
 
 A [`Vector3int16`][Vector3int16_DT] is written as three `i16` values representing the `X`, `Y`, and `Z` fields of the vector, in that order.
+
+<!-- Link repository -->
+
+[Axes_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Axes
+[BrickColor_DT]: https://create.roblox.com/docs/reference/engine/datatypes/BrickColor
+[CFrame_DT]: https://create.roblox.com/docs/reference/engine/datatypes/CFrame
+[Color3_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Color3
+[ColorSequence_DT]: https://create.roblox.com/docs/reference/engine/datatypes/ColorSequence
+[ColorSequenceKeypoint_DT]: https://create.roblox.com/docs/reference/engine/datatypes/ColorSequenceKeypoint
+[DateTime_DT]: https://create.roblox.com/docs/reference/engine/datatypes/DateTime
+[Enum_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Enum
+[EnumItem_DT]: https://create.roblox.com/docs/reference/engine/datatypes/EnumItem
+[Faces_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Faces
+[Font_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Font
+[NumberRange_DT]: https://create.roblox.com/docs/reference/engine/datatypes/NumberRange
+[NumberSequence_DT]: https://create.roblox.com/docs/reference/engine/datatypes/NumberSequence
+[NumberSequenceKeypoint_DT]: https://create.roblox.com/docs/reference/engine/datatypes/NumberSequenceKeypoint
+[PhysicalProperties_DT]: https://create.roblox.com/docs/reference/engine/datatypes/PhysicalProperties
+[Ray_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Ray
+[Rect_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Rect
+[Region3_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Region3
+[UDim_DT]: https://create.roblox.com/docs/reference/engine/datatypes/UDim
+[UDim2_DT]: https://create.roblox.com/docs/reference/engine/datatypes/UDim2
+[Vector2_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Vector2
+[Vector2int16_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Vector2int16
+[Vector3_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Vector3
+[Vector3int16_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Vector3int16
+
+[Material_E]: https://create.roblox.com/docs/reference/engine/enums/Material
