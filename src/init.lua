@@ -392,7 +392,13 @@ function Buwic.writeFont(self: Buwic, font: Font)
 	self._cursor += 6 + #family
 end
 
-function Buwic.writeNumberRange(self: Buwic, range: NumberRange) end
+function Buwic.writeNumberRange(self: Buwic, range: NumberRange)
+	resizeIfNeeded(self, 8)
+	local b, c = self._buffer, self._cursor
+	buffer.writef32(b, c, range.Min)
+	buffer.writef32(b, c + 4, range.Max)
+	self._cursor += 8
+end
 
 function Buwic.writeNumberSequence(self: Buwic, sequence: NumberSequence) end
 
@@ -400,9 +406,15 @@ function Buwic.writePhysicalProperties(self: Buwic, physicalProperties: Physical
 
 function Buwic.writeRay(self: Buwic, ray: Ray) end
 
-function Buwic.writeRect(self: Buwic, rect: Rect) end
-
-function Buwic.writeRegion3(self: Buwic, region3: Region3) end
+function Buwic.writeRect(self: Buwic, rect: Rect)
+	resizeIfNeeded(self, 16)
+	local b, c = self._buffer, self._cursor
+	buffer.writef32(b, c, rect.Min.X)
+	buffer.writef32(b, c + 4, rect.Min.Y)
+	buffer.writef32(b, c + 8, rect.Max.X)
+	buffer.writef32(b, c + 12, rect.Max.Y)
+	self._cursor += 16
+end
 
 function Buwic.writeUDim(self: Buwic, udim: UDim) end
 
