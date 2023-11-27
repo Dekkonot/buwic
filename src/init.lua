@@ -203,14 +203,21 @@ function Buwic.readi16(self: Buwic): number
 	return n
 end
 
+--- Reads a u24 from the provided `Buwic`.
+--- This is separate so that it can be inlined in both `Buwic.readu24`
+--- and `Buwic.readi24`.
+local function readu24(buwic: Buwic): number
+	local n = buffer.readu16(buwic._buffer, buwic._cursor)
+	buwic._cursor += 3
+	return bit32.lshift(buffer.readu8(buwic._buffer, buwic._cursor - 1), 16) + n
+end
+
 function Buwic.readu24(self: Buwic): number
-	local n = buffer.readu16(self._buffer, self._cursor)
-	self._cursor += 3
-	return bit32.lshift(buffer.readu8(self._buffer, self._cursor - 1), 16) + n
+	return readu24(self)
 end
 
 function Buwic.readi24(self: Buwic): number
-	local n = self:readu24()
+	local n = readu24(self)
 	return if n >= 0x800000 then n - 0x1000000 else n
 end
 
