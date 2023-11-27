@@ -413,7 +413,16 @@ function Buwic.writeNumberSequence(self: Buwic, sequence: NumberSequence)
 	self._cursor += (4 + #keypoints * 12)
 end
 
-function Buwic.writePhysicalProperties(self: Buwic, physicalProperties: PhysicalProperties) end
+function Buwic.writePhysicalProperties(self: Buwic, physicalProperties: PhysicalProperties)
+	resizeIfNeeded(self, 20)
+	local b, c = self._buffer, self._cursor
+	buffer.writef32(b, c, physicalProperties.Density)
+	buffer.writef32(b, c + 4, physicalProperties.Friction)
+	buffer.writef32(b, c + 8, physicalProperties.Elasticity)
+	buffer.writef32(b, c + 12, physicalProperties.FrictionWeight)
+	buffer.writef32(b, c + 16, physicalProperties.ElasticityWeight)
+	self._cursor += 20
+end
 
 function Buwic.writeRay(self: Buwic, ray: Ray)
 	resizeIfNeeded(self, 24)

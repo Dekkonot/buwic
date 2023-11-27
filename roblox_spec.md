@@ -90,7 +90,9 @@ Each `NumberSequenceKeypoint` is written as three `f32`s, representing the `Time
 
 ## PhysicalProperties
 
-<!--TODO: PhysicalProperties -->
+A [`PhysicalProperties`][PhysicalProperties_DT] is written as five `f32` values representing the components of the data type. These values are written in the order `Density`, `Friction`, `Elasticity`, `FrictionWeight`, and `ElasticityWeight`.
+
+This data type is stored naively without accounting for the possibility of a `PhysicalProperties` being directly created from a [`Material`][Material_E] enum variant. This is for performance.
 
 ## Ray
 
