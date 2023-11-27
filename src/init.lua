@@ -344,7 +344,14 @@ function Buwic.writeDateTime(self: Buwic, date: DateTime)
 end
 
 function Buwic.writeEnum(self: Buwic, enum: EnumItem)
-	-- TODO: Enum
+	local enumType = tostring(enum.EnumType)
+	resizeIfNeeded(self, #enumType + 6) -- 2 from prefix, 4 from enum value
+	local b, c = self._buffer, self._cursor
+	buffer.writeu32(b, c, enum.Value)
+	-- I feel confidant Roblox will never make an enum with more than 16,000
+	-- characters in its name.
+	buffer.writeu16(b, c + 4, #enumType)
+	buffer.writestring(b, c + 6, enumType)
 end
 
 function Buwic.writeFaces(self: Buwic, faces: Faces)
