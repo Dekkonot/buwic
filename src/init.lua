@@ -267,4 +267,128 @@ end
 
 -- TODO: function for reading and writing vectors
 
+-- Roblox specific writers --
+
+function Buwic.writeAxes(self: Buwic, axes: Axes)
+	resizeIfNeeded(self, 1)
+	buffer.writeu8(
+		self._buffer,
+		self._cursor,
+		(axes.Z and 0b100 or 0b000) + (axes.Y and 0b010 or 0b000) + (axes.X and 0b001 or 0b000)
+	)
+	self._cursor += 1
+end
+
+function Buwic.writeBrickColor(self: Buwic, color: BrickColor)
+	resizeIfNeeded(self, 2)
+	buffer.writeu16(self._buffer, self._cursor, color.Number)
+	self._cursor += 2
+end
+
+--- Writes a CFrame as 12 `f32`s.
+function Buwic.writeCFrame(self: Buwic, cframe: CFrame)
+	resizeIfNeeded(self, 12 * 3)
+	local b, c = self._buffer, self._cursor
+	local x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22 = cframe:GetComponents()
+	buffer.writef32(b, c, x)
+	buffer.writef32(b, c + 4, y)
+	buffer.writef32(b, c + 8, z)
+	buffer.writef32(b, c + 12, r00)
+	buffer.writef32(b, c + 16, r01)
+	buffer.writef32(b, c + 20, r02)
+	buffer.writef32(b, c + 24, r10)
+	buffer.writef32(b, c + 28, r11)
+	buffer.writef32(b, c + 32, r12)
+	buffer.writef32(b, c + 36, r20)
+	buffer.writef32(b, c + 40, r21)
+	buffer.writef32(b, c + 44, r22)
+	self._cursor += 12 * 3
+end
+
+function Buwic.writeColor3(self: Buwic, color: Color3)
+	resizeIfNeeded(self, 12)
+	local b, c = self._buffer, self._cursor
+	buffer.writef32(b, c, color.R)
+	buffer.writef32(b, c + 4, color.G)
+	buffer.writef32(b, c + 8, color.B)
+	self._cursor += 12
+end
+
+function Buwic.writeColor3uint8(self: Buwic, color: Color3)
+	resizeIfNeeded(self, 3)
+	local b, c = self._buffer, self._cursor
+	buffer.writeu8(b, c, math.floor(color.R * 255))
+	buffer.writeu8(b, c + 4, math.floor(color.G * 255))
+	buffer.writeu8(b, c + 8, math.floor(color.B * 255))
+	self._cursor += 3
+end
+
+function Buwic.writeColorSequence(self: Buwic, sequence: ColorSequence)
+	local keypoints = sequence.Keypoints
+	resizeIfNeeded(self, 4 + #keypoints * 16)
+	local b, c = self._buffer, self._cursor
+	buffer.writeu32(b, c, #keypoints)
+	for i, keypoint in keypoints do
+		buffer.writef32(b, c + 4 + 16 * (i - 1), keypoint.Time)
+		buffer.writef32(b, c + 8 + 16 * (i - 1), keypoint.Value.R)
+		buffer.writef32(b, c + 12 + 16 * (i - 1), keypoint.Value.G)
+		buffer.writef32(b, c + 16 + 16 * (i - 1), keypoint.Value.B)
+	end
+	self._cursor += (4 + #keypoints * 16)
+end
+
+function Buwic.writeDateTime(self: Buwic, date: DateTime)
+	resizeIfNeeded(self, 8)
+	buffer.writef64(self._buffer, self._cursor, date.UnixTimestampMillis)
+	self._cursor += 8
+end
+
+function Buwic.writeEnum(self: Buwic, enum: EnumItem)
+	-- TODO: Enum
+end
+
+function Buwic.writeFaces(self: Buwic, faces: Faces)
+	resizeIfNeeded(self, 1)
+	-- Top, Left, Front, Bottom, Right, Back
+	buffer.writeu8(
+		self._buffer,
+		self._cursor,
+		(faces.Top and 0b100_000 or 0)
+			+ (faces.Left and 0b010_000 or 0)
+			+ (faces.Front and 0b001_000 or 0)
+			+ (faces.Bottom and 0b000_100 or 0)
+			+ (faces.Right and 0b000_010 or 0)
+			+ (faces.Back and 0b000_001 or 0)
+	)
+	self._cursor += 1
+end
+
+function Buwic.writeFont(self: Buwic, font: Font)
+	-- TODO: Font
+end
+
+function Buwic.writeNumberRange(self: Buwic, range: NumberRange) end
+
+function Buwic.writeNumberSequence(self: Buwic, sequence: NumberSequence) end
+
+function Buwic.writePhysicalProperties(self: Buwic, physicalProperties: PhysicalProperties) end
+
+function Buwic.writeRay(self: Buwic, ray: Ray) end
+
+function Buwic.writeRect(self: Buwic, rect: Rect) end
+
+function Buwic.writeRegion3(self: Buwic, region3: Region3) end
+
+function Buwic.writeUDim(self: Buwic, udim: UDim) end
+
+function Buwic.writeUDim2(self: Buwic, udim2: UDim2) end
+
+function Buwic.writeVector2(self: Buwic, vector: Vector2) end
+
+function Buwic.writeVector2int16(self: Buwic, vector: Vector2int16) end
+
+function Buwic.writeVector3(self: Buwic, vector: Vector3) end
+
+function Buwic.writeVector3int16(self: Buwic, vector: Vector3int16) end
+
 return Buwic
