@@ -25,6 +25,25 @@ local function resizeIfNeeded(buwic: Buwic, more: number)
 	end
 end
 
+--- Writes a u24 to the provided `Buwic`.
+--- This is separate so that it can be inlined in both `Buwic.writeu24`
+--- and `Buwic.writei24`.
+local function writeu24(buwic: Buwic, n: number)
+	resizeIfNeeded(buwic, 3)
+	buffer.writeu8(buwic._buffer, buwic._cursor, bit32.band(n, 0xFF))
+	buffer.writeu16(buwic._buffer, buwic._cursor + 1, bit32.rshift(n, 8))
+	buwic._cursor += 3
+end
+
+--- Reads a u24 from the provided `Buwic`.
+--- This is separate so that it can be inlined in both `Buwic.readu24`
+--- and `Buwic.readi24`.
+local function readu24(buwic: Buwic): number
+	local n = buffer.readu16(buwic._buffer, buwic._cursor)
+	buwic._cursor += 3
+	return bit32.lshift(buffer.readu8(buwic._buffer, buwic._cursor - 1), 16) + n
+end
+
 function Buwic.new(capacity: number?): Buwic
 	return setmetatable({
 		_buffer = buffer.create(capacity or 0),
@@ -116,16 +135,6 @@ function Buwic.writei16(self: Buwic, n: number)
 	self._cursor += 2
 end
 
---- Writes a u24 to the provided `Buwic`.
---- This is separate so that it can be inlined in both `Buwic.writeu24`
---- and `Buwic.writei24`.
-local function writeu24(buwic: Buwic, n: number)
-	resizeIfNeeded(buwic, 3)
-	buffer.writeu8(buwic._buffer, buwic._cursor, bit32.band(n, 0xFF))
-	buffer.writeu16(buwic._buffer, buwic._cursor + 1, bit32.rshift(n, 8))
-	buwic._cursor += 3
-end
-
 function Buwic.writeu24(self: Buwic, n: number)
 	writeu24(self, n)
 end
@@ -201,15 +210,6 @@ function Buwic.readi16(self: Buwic): number
 	local n = buffer.readi16(self._buffer, self._cursor)
 	self._cursor += 2
 	return n
-end
-
---- Reads a u24 from the provided `Buwic`.
---- This is separate so that it can be inlined in both `Buwic.readu24`
---- and `Buwic.readi24`.
-local function readu24(buwic: Buwic): number
-	local n = buffer.readu16(buwic._buffer, buwic._cursor)
-	buwic._cursor += 3
-	return bit32.lshift(buffer.readu8(buwic._buffer, buwic._cursor - 1), 16) + n
 end
 
 function Buwic.readu24(self: Buwic): number
