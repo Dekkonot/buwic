@@ -400,7 +400,18 @@ function Buwic.writeNumberRange(self: Buwic, range: NumberRange)
 	self._cursor += 8
 end
 
-function Buwic.writeNumberSequence(self: Buwic, sequence: NumberSequence) end
+function Buwic.writeNumberSequence(self: Buwic, sequence: NumberSequence)
+	local keypoints = sequence.Keypoints
+	resizeIfNeeded(self, 4 + #keypoints * 12)
+	local b, c = self._buffer, self._cursor
+	buffer.writeu32(b, c, #keypoints)
+	for i, keypoint in keypoints do
+		buffer.writef32(b, c + 4 + 12 * (i - 1), keypoint.Time)
+		buffer.writef32(b, c + 8 + 12 * (i - 1), keypoint.Value)
+		buffer.writef32(b, c + 12 + 12 * (i - 1), keypoint.Envelope)
+	end
+	self._cursor += (4 + #keypoints * 12)
+end
 
 function Buwic.writePhysicalProperties(self: Buwic, physicalProperties: PhysicalProperties) end
 
