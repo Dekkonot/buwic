@@ -14,7 +14,7 @@ All numbers follow the format specified by the `buffer` library.
 - [DateTime](#datetime)
 - [EnumItem](#enumitem)
 - [Faces](#faces)
-- [Font](#faces)
+- [Font](#font)
 - [NumberRange](#numberrange)
 - [NumberSequence](#numbersequence)
 - [PhysicalProperties](#physicalproperties)
