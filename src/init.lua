@@ -116,15 +116,22 @@ function Buwic.writei16(self: Buwic, n: number)
 	self._cursor += 2
 end
 
+--- Writes a u24 to the provided `Buwic`.
+--- This is separate so that it can be inlined in both `Buwic.writeu24`
+--- and `Buwic.writei24`.
+local function writeu24(buwic: Buwic, n: number)
+	resizeIfNeeded(buwic, 3)
+	buffer.writeu8(buwic._buffer, buwic._cursor, bit32.band(n, 0xFF))
+	buffer.writeu16(buwic._buffer, buwic._cursor + 1, bit32.rshift(n, 8))
+	buwic._cursor += 3
+end
+
 function Buwic.writeu24(self: Buwic, n: number)
-	resizeIfNeeded(self, 3)
-	buffer.writeu8(self._buffer, self._cursor, bit32.band(n, 0xFF))
-	buffer.writeu16(self._buffer, self._cursor + 1, bit32.rshift(n, 8))
-	self._cursor += 3
+	writeu24(self, n)
 end
 
 function Buwic.writei24(self: Buwic, n: number)
-	self:writeu24(n % 0x1000_000)
+	writeu24(self, n % 0x1000_000)
 end
 
 function Buwic.writeu32(self: Buwic, n: number)
