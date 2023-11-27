@@ -500,6 +500,24 @@ end
 
 -- Roblox specific readers --
 
+function Buwic.readAxes(self: Buwic): Axes end
+
+function Buwic.readBrickColor(self: Buwic): BrickColor end
+
+function Buwic.readCFrame(self: Buwic): CFrame end
+
+function Buwic.readColor3(self: Buwic): Color3 end
+
+function Buwic.readColor3uint8(self: Buwic): Color3 end
+
+function Buwic.readColorSequence(self: Buwic): ColorSequence end
+
+function Buwic.readDateTime(self: Buwic): DateTime end
+
+function Buwic.readEnum(self: Buwic): EnumItem end
+
+function Buwic.readFaces(self: Buwic): Faces end
+
 function Buwic.readFont(self: Buwic): Font
 	local b, c = self._buffer, self._cursor
 	local style = NUMBER_TO_FONTSTYLE[buffer.readu8(b, c)]
@@ -511,5 +529,27 @@ function Buwic.readFont(self: Buwic): Font
 
 	return Font.new(family, weight, style)
 end
+
+function Buwic.readNumberRange(self: Buwic): NumberRange end
+
+function Buwic.readNumberSequence(self: Buwic): NumberSequence end
+
+function Buwic.readPhysicalProperties(self: Buwic): PhysicalProperties end
+
+function Buwic.readRay(self: Buwic): Ray end
+
+function Buwic.readRect(self: Buwic): Rect end
+
+function Buwic.readUDim(self: Buwic): UDim end
+
+function Buwic.readUDim2(self: Buwic): UDim2 end
+
+function Buwic.readVector2(self: Buwic): Vector2 end
+
+function Buwic.readVector2int16(self: Buwic): Vector2int16 end
+
+function Buwic.readVector3(self: Buwic): Vector3 end
+
+function Buwic.readVector3int16(self: Buwic): Vector3int16 end
 
 return Buwic
