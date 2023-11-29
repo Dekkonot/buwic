@@ -12,7 +12,9 @@ export type Buwic = typeof(setmetatable(
 	Buwic
 ))
 
+--- A map of FontStyle variants to their `Value` field
 local NUMBER_TO_FONTSTYLE = {}
+--- A map of FontWeight variants to their `Value` field
 local NUMBER_TO_FONTWEIGHT = {}
 
 for _, item: Enum.FontStyle in Enum.FontStyle:GetEnumItems() do
@@ -22,6 +24,8 @@ for _, item: Enum.FontWeight in Enum.FontWeight:GetEnumItems() do
 	NUMBER_TO_FONTWEIGHT[item.Value] = item
 end
 
+--- Convenience function for dynamically resizing the buffer.
+--- Designed to be inlined by the compiler.
 local function resizeIfNeeded(buwic: Buwic, more: number)
 	local len = buffer.len(buwic._buffer)
 	if buwic._cursor + more > len then
@@ -54,6 +58,8 @@ local function readu24(buwic: Buwic): number
 	return bit32.lshift(buffer.readu8(buwic._buffer, buwic._cursor - 1), 16) + n
 end
 
+--- Constructs a new `Buwic` with the provided capacity, or 0 if none is
+--- provided.
 function Buwic.new(capacity: number?): Buwic
 	return setmetatable({
 		_buffer = buffer.create(capacity or 0),
@@ -63,12 +69,17 @@ function Buwic.new(capacity: number?): Buwic
 	}, Buwic)
 end
 
+--- Constructs a new `Buwic` from the provided string.
 function Buwic.fromString(str: string): Buwic
 	local self = Buwic.new(#str)
 	buffer.writestring(self._buffer, 0, str)
 	return self
 end
 
+--- Constructs a new `Buwic` from the provided buffer.
+---
+--- This function copies the contents of the buffer and does not store
+--- references to it, so it may be used freely after this function.
 function Buwic.fromBuffer(buff: buffer): Buwic
 	local self = Buwic.new(buffer.len(buff))
 	buffer.copy(self._buffer, 0, buff, buffer.len(buff))
@@ -77,24 +88,36 @@ end
 
 -- Accesor methods --
 
+--- Converts the `Buwic` to a string. This string will not be valid UTF-8.
 function Buwic.toString(self: Buwic): string
 	return buffer.readstring(self._buffer, 0, buffer.len(self._buffer))
 end
 
+--- Returns how many bytes the `Buwic` is currently capable of storing.
+--- The `Buwic` will still resize from this point.
 function Buwic.capacity(self: Buwic): number
 	return buffer.len(self._buffer)
 end
 
+--- Returns the internal cursor used by the `Buwic`. This cursor is 0 based,
+--- and is in bytes.
 function Buwic.getCursor(self: Buwic): number
 	return self._cursor
 end
 
 -- Modifying methods --
 
+--- Sets the internal cursor used by the `Buwic`. This cursor is 0 based,
+--- and is in bytes.
+---
+--- To reset the cursor, this method should be used to set it to `0`.
 function Buwic.setCursor(self: Buwic, location: number)
 	self._cursor = location
 end
 
+--- Reserves `more` bytes in the internal buffer, triggering a resize.
+--- This can be useful when performing many writes sequentially if the size is
+--- known beforehand to reduce the number of reallocations done.
 function Buwic.reserve(self: Buwic, more: number)
 	local len = buffer.len(self._buffer)
 	local new = buffer.create(len + more)
@@ -103,7 +126,12 @@ function Buwic.reserve(self: Buwic, more: number)
 	self._buffer = new
 end
 
---- Will move cursor to new len if it's already beyond the buffer end
+--- Shrinks the internal capacity by `less` bytes, triggering a resize.
+--- This method effectively truncates the `Buwic`, chopping `less` bytes off of
+--- the end.
+---
+--- If the cursor would be outside the new capacity, it is placed at the end
+--- of the `Buwic`. Otherwise it's left where it was.
 function Buwic.shrink(self: Buwic, less: number)
 	local len = buffer.len(self._buffer)
 	local new = buffer.create(math.max(len - less, 0))
@@ -117,68 +145,106 @@ end
 
 -- Basic Writers --
 
+--- Writes an unsigned 8-bit integer (`u8`) to the `Buwic`.
+---
+--- May error if `n` is outside the range `[0, 255]`.
 function Buwic.writeu8(self: Buwic, n: number)
 	resizeIfNeeded(self, 1)
 	buffer.writeu8(self._buffer, self._cursor, n)
 	self._cursor += 1
 end
 
+--- Writes a signed 8-bit integer (`i8`) to the `Buwic`.
+---
+--- May error if `n` is outside the range `[-128, 127]`.
 function Buwic.writei8(self: Buwic, n: number)
 	resizeIfNeeded(self, 1)
 	buffer.writei8(self._buffer, self._cursor, n)
 	self._cursor += 1
 end
 
+--- Writes an unsigned 16-bit integer (`u16`) to the `Buwic`.
+---
+--- May error if `n` is outside the range `[0, 65535]`.
 function Buwic.writeu16(self: Buwic, n: number)
 	resizeIfNeeded(self, 2)
 	buffer.writeu16(self._buffer, self._cursor, n)
 	self._cursor += 2
 end
 
+--- Writes a signed 16-bit integer (`i16`) to the `Buwic`.
+---
+--- May error if `n` is outside the range `[-32768, 32767]`.
 function Buwic.writei16(self: Buwic, n: number)
 	resizeIfNeeded(self, 2)
 	buffer.writei16(self._buffer, self._cursor, n)
 	self._cursor += 2
 end
 
+--- Writes an unsigned 24-bit integer (`u24`) to the `Buwic`.
+---
+--- May error if `n` is outside the range `[0, 16777215]`.
 function Buwic.writeu24(self: Buwic, n: number)
 	writeu24(self, n)
 end
 
+--- Writes a signed 24-bit integer (`i24`) to the `Buwic`.
+---
+--- May error if `n` is outside the range `[-8388608, 8388607]`.
 function Buwic.writei24(self: Buwic, n: number)
 	writeu24(self, n % 0x1000_000)
 end
 
+--- Writes an unsigned 32-bit integer (`u32`) to the `Buwic`.
+---
+--- May error if `n` is outside the range `[0, 4294967295]`.
 function Buwic.writeu32(self: Buwic, n: number)
 	resizeIfNeeded(self, 4)
 	buffer.writeu32(self._buffer, self._cursor, n)
 	self._cursor += 4
 end
 
+--- Writes a signed 32-bit integer (`i32`) to the `Buwic`.
+---
+--- May error if `n` is outside the range `[-2147483648, 2147483647]`.
 function Buwic.writei32(self: Buwic, n: number)
 	resizeIfNeeded(self, 4)
 	buffer.writei32(self._buffer, self._cursor, n)
 	self._cursor += 4
 end
 
+--- Writes a 32-bit floating-point number (`f32`) to the `Buwic`.
 function Buwic.writef32(self: Buwic, n: number)
 	resizeIfNeeded(self, 4)
 	buffer.writef32(self._buffer, self._cursor, n)
 	self._cursor += 4
 end
 
+--- Writes a 64-bit floating-point number (`f64`) to the `Buwic`.
 function Buwic.writef64(self: Buwic, n: number)
 	resizeIfNeeded(self, 8)
 	buffer.writef64(self._buffer, self._cursor, n)
 	self._cursor += 8
 end
 
+--- Writes a string as sequence of bytes to the `Buwic`. If `len` is provided,
+--- only `len` bytes will be written. Otherwise, the entirety of `str` will be
+--- written to the `Buwic`.
+---
+--- This method does not prefix the string with a length. To write a string
+--- like that, see `writeString`.
 function Buwic.writeRawString(self: Buwic, str: string, len: number?)
 	resizeIfNeeded(self, len or #str)
 	buffer.writestring(self._buffer, self._cursor, str, len)
 	self._cursor += len or #str
 end
 
+--- Writes a string to the `Buwic`. If `len` is provided, only `len` bytes
+--- will be written. Otherwise, the entirety of `str` will be written to
+--- the `Buwic`.
+---
+--- This method prefixes the string with a length. To write a string
+--- without that, see `writeRawString`.
 function Buwic.writeString(self: Buwic, str: string, len: number?)
 	resizeIfNeeded(self, (len or #str) + 4)
 	buffer.writeu32(self._buffer, self._cursor, len or #str)
@@ -186,6 +252,9 @@ function Buwic.writeString(self: Buwic, str: string, len: number?)
 	self._cursor += #str + 4
 end
 
+--- Writes a buffer to the `Buwic`. If `len` is provided, only `len`
+--- bytes from the buffer will be copied. Otherwise, the entirety buffer will
+--- be copied into the `Buwic`.
 function Buwic.writeBuffer(self: Buwic, buff: buffer, len: number?)
 	resizeIfNeeded(self, len or buffer.len(buff))
 	buffer.copy(self._buffer, self._cursor, buff, 0, len)
