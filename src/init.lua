@@ -611,6 +611,7 @@ end
 
 -- Roblox specific readers --
 
+--- Reads an `Axes` from the `Buwic`.
 function Buwic.readAxes(self: Buwic): Axes
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 1, "attempt to read Axes out of bounds")
@@ -630,6 +631,7 @@ function Buwic.readAxes(self: Buwic): Axes
 	return Axes.new(table.unpack(axes))
 end
 
+--- Reads a `BrickColor` from the `Buwic`.
 function Buwic.readBrickColor(self: Buwic): BrickColor
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 2, "attempt to read BrickColor out of bounds")
@@ -639,6 +641,7 @@ function Buwic.readBrickColor(self: Buwic): BrickColor
 	return color
 end
 
+--- Reads a `CFrame` from the `Buwic`.
 function Buwic.readCFrame(self: Buwic): CFrame
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 48, "attempt to read CFrame out of bounds")
@@ -654,6 +657,7 @@ function Buwic.readCFrame(self: Buwic): CFrame
 	return cf
 end
 
+--- Reads a `Color3` from the `Buwic`.
 function Buwic.readColor3(self: Buwic): Color3
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 12, "attempt to read Color3 out of bounds")
@@ -663,6 +667,8 @@ function Buwic.readColor3(self: Buwic): Color3
 	return color
 end
 
+--- Reads a `Color3` from the `Buwic` that was written with the colors
+--- truncated.
 function Buwic.readColor3uint8(self: Buwic): Color3
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 3, "attempt to read Color3uint8 out of bounds")
@@ -672,6 +678,7 @@ function Buwic.readColor3uint8(self: Buwic): Color3
 	return color
 end
 
+--- Reads a `ColorSequence` from the `Buwic`.
 function Buwic.readColorSequence(self: Buwic): ColorSequence
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 4, "attempt to read ColorSequence out of bounds")
@@ -696,6 +703,8 @@ function Buwic.readColorSequence(self: Buwic): ColorSequence
 	return ColorSequence.new(keypoints)
 end
 
+--- Reads a `DateTime` from the `Buwic`. This is equivalent to reading a
+--- `f32` and making the `DateTime` using `DateTime.fromUnixTimestampMillis`.
 function Buwic.readDateTime(self: Buwic): DateTime
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 8, "attempt to read DateTime out of bounds")
@@ -705,6 +714,7 @@ function Buwic.readDateTime(self: Buwic): DateTime
 	return date
 end
 
+--- Reads an `EnumItem` from the `Buwic`.
 function Buwic.readEnum(self: Buwic): EnumItem
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 6, "attempt to read DateTime out of bounds")
@@ -723,6 +733,7 @@ function Buwic.readEnum(self: Buwic): EnumItem
 	error(string.format("no EnumItem with Value %d found as a member of %s", value, name), 2)
 end
 
+--- Reads a `Faces` from the `Buwic`.
 function Buwic.readFaces(self: Buwic): Faces
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 1, "attempt to read Faces out of bounds")
@@ -751,6 +762,7 @@ function Buwic.readFaces(self: Buwic): Faces
 	return Faces.new(table.unpack(faces))
 end
 
+--- Reads a `Font` from the `Buwic`.
 function Buwic.readFont(self: Buwic): Font
 	local b, c = self._buffer, self._cursor
 	local style = NUMBER_TO_FONTSTYLE[buffer.readu8(b, c)]
@@ -763,6 +775,7 @@ function Buwic.readFont(self: Buwic): Font
 	return Font.new(family, weight, style)
 end
 
+--- Reads a `NumberRange` from the `Buwic`.
 function Buwic.readNumberRange(self: Buwic): NumberRange
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 8, "attempt to read NumberRange out of bounds")
@@ -772,6 +785,7 @@ function Buwic.readNumberRange(self: Buwic): NumberRange
 	return range
 end
 
+--- Reads a `NumberSequence` from the `Buwic`.
 function Buwic.readNumberSequence(self: Buwic): NumberSequence
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 4, "attempt to read NumberSequence out of bounds")
@@ -793,6 +807,7 @@ function Buwic.readNumberSequence(self: Buwic): NumberSequence
 	return NumberSequence.new(keypoints)
 end
 
+--- Reads a `PhysicalProperties` from the `Buwic`.
 function Buwic.readPhysicalProperties(self: Buwic): PhysicalProperties
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 20, "attempt to read PhysicalProperties out of bounds")
@@ -808,6 +823,7 @@ function Buwic.readPhysicalProperties(self: Buwic): PhysicalProperties
 	return pp
 end
 
+--- Reads a `Ray` from the `Buwic`.
 function Buwic.readRay(self: Buwic): Ray
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 24, "attempt to read Ray out of bounds")
@@ -820,6 +836,7 @@ function Buwic.readRay(self: Buwic): Ray
 	return ray
 end
 
+--- Reads a `Rect` from the `Buwic`.
 function Buwic.readRect(self: Buwic): Rect
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 16, "attempt to read Rect out of bounds")
@@ -830,6 +847,7 @@ function Buwic.readRect(self: Buwic): Rect
 	return rect
 end
 
+--- Reads a `UDim` from the `Buwic`.
 function Buwic.readUDim(self: Buwic): UDim
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 8, "attempt to read UDim out of bounds")
@@ -839,6 +857,7 @@ function Buwic.readUDim(self: Buwic): UDim
 	return udim
 end
 
+--- Reads a `UDim2` from the `Buwic`.
 function Buwic.readUDim2(self: Buwic): UDim2
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 16, "attempt to read UDim2 out of bounds")
@@ -854,6 +873,7 @@ function Buwic.readUDim2(self: Buwic): UDim2
 	return udim2
 end
 
+--- Reads a `Vector2` from the `Buwic`.
 function Buwic.readVector2(self: Buwic): Vector2
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 8, "attempt to read Vector2 out of bounds")
@@ -863,6 +883,7 @@ function Buwic.readVector2(self: Buwic): Vector2
 	return vector
 end
 
+--- Reads a `Vector2int16` from the `Buwic`.
 function Buwic.readVector2int16(self: Buwic): Vector2int16
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 4, "attempt to read Vector2int16 out of bounds")
@@ -872,6 +893,7 @@ function Buwic.readVector2int16(self: Buwic): Vector2int16
 	return vector
 end
 
+--- Reads a `Vector3` from the `Buwic`.
 function Buwic.readVector3(self: Buwic): Vector3
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 12, "attempt to read Vector3 out of bounds")
@@ -881,6 +903,7 @@ function Buwic.readVector3(self: Buwic): Vector3
 	return vector
 end
 
+--- Reads a `Vector3int16` from the `Buwic`.
 function Buwic.readVector3int16(self: Buwic): Vector3int16
 	local b, c = self._buffer, self._cursor
 	assert(buffer.len(b) >= c + 6, "attempt to read Vector3int16 out of bounds")
