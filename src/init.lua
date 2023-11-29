@@ -89,10 +89,6 @@ function Buwic.getCursor(self: Buwic): number
 	return self._cursor
 end
 
-function Buwic.leak(self: Buwic): buffer
-	return self._buffer
-end
-
 -- Modifying methods --
 
 function Buwic.setCursor(self: Buwic, location: number)
