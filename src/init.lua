@@ -263,69 +263,81 @@ end
 
 -- Basic Readers --
 
+--- Reads an unsigned 8-bit integer (`u8`) from the `Buwic`.
 function Buwic.readu8(self: Buwic): number
 	local n = buffer.readu8(self._buffer, self._cursor)
 	self._cursor += 1
 	return n
 end
 
+--- Reads a signed 8-bit integer (`i8`) from the `Buwic`.
 function Buwic.readi8(self: Buwic): number
 	local n = buffer.readi8(self._buffer, self._cursor)
 	self._cursor += 1
 	return n
 end
 
+--- Reads an unsigned 16-bit integer (`u16`) from the `Buwic`.
 function Buwic.readu16(self: Buwic): number
 	local n = buffer.readu16(self._buffer, self._cursor)
 	self._cursor += 2
 	return n
 end
 
+--- Reads a signed 16-bit integer (`i16`) from the `Buwic`.
 function Buwic.readi16(self: Buwic): number
 	local n = buffer.readi16(self._buffer, self._cursor)
 	self._cursor += 2
 	return n
 end
 
+--- Reads an unsigned 24-bit integer (`u24`) from the `Buwic`.
 function Buwic.readu24(self: Buwic): number
 	return readu24(self)
 end
 
+--- Reads a signed 24-bit integer (`i24`) from the `Buwic`.
 function Buwic.readi24(self: Buwic): number
 	local n = readu24(self)
 	return if n >= 0x800000 then n - 0x1000000 else n
 end
 
+--- Reads an unsigned 32-bit integer (`u32`) from the `Buwic`.
 function Buwic.readu32(self: Buwic): number
 	local n = buffer.readu32(self._buffer, self._cursor)
 	self._cursor += 4
 	return n
 end
 
+--- Reads a signed 32-bit integer (`i32`) from the `Buwic`.
 function Buwic.readi32(self: Buwic): number
 	local n = buffer.readi32(self._buffer, self._cursor)
 	self._cursor += 4
 	return n
 end
 
+--- Reads a 32-bit floating-point number (`f32`) from the `Buwic`.
 function Buwic.readf32(self: Buwic): number
 	local n = buffer.readf32(self._buffer, self._cursor)
 	self._cursor += 4
 	return n
 end
 
+--- Reads a 64-bit floating-point number (`f64`) from the `Buwic`.
 function Buwic.readf64(self: Buwic): number
 	local n = buffer.readf64(self._buffer, self._cursor)
 	self._cursor += 8
 	return n
 end
 
+--- Reads a sequence of `len` bytes from the `Buwic` into a string.
 function Buwic.readRawString(self: Buwic, len: number): string
 	local str = buffer.readstring(self._buffer, self._cursor, len)
 	self._cursor += len
 	return str
 end
 
+--- Reads a string from the `Buwic`.
 function Buwic.readString(self: Buwic): string
 	local len = buffer.readu32(self._buffer, self._cursor)
 	local str = buffer.readstring(self._buffer, self._cursor + 4, len)
@@ -333,6 +345,7 @@ function Buwic.readString(self: Buwic): string
 	return str
 end
 
+--- Reads `len` bytes from the `Buwic` and places them into a buffer.
 function Buwic.readBuffer(self: Buwic, len: number): buffer
 	local out = buffer.create(len)
 	buffer.copy(out, 0, self._buffer, self._cursor, len)
@@ -344,6 +357,7 @@ end
 
 -- Roblox specific writers --
 
+--- Writes an `Axes` to the `Buwic`.
 function Buwic.writeAxes(self: Buwic, axes: Axes)
 	resizeIfNeeded(self, 1)
 	buffer.writeu8(
@@ -354,13 +368,14 @@ function Buwic.writeAxes(self: Buwic, axes: Axes)
 	self._cursor += 1
 end
 
+--- Writes a `BrickColor` to the `Buwic`.
 function Buwic.writeBrickColor(self: Buwic, color: BrickColor)
 	resizeIfNeeded(self, 2)
 	buffer.writeu16(self._buffer, self._cursor, color.Number)
 	self._cursor += 2
 end
 
---- Writes a CFrame as 12 `f32`s.
+--- Writes a `CFrame` to the `Buwic`.
 function Buwic.writeCFrame(self: Buwic, cframe: CFrame)
 	resizeIfNeeded(self, 12 * 3)
 	local b, c = self._buffer, self._cursor
@@ -384,6 +399,7 @@ function Buwic.writeCFrame(self: Buwic, cframe: CFrame)
 	self._cursor += 12 * 3
 end
 
+--- Writes a `Color3` to the `Buwic`.
 function Buwic.writeColor3(self: Buwic, color: Color3)
 	resizeIfNeeded(self, 12)
 	local b, c = self._buffer, self._cursor
@@ -393,6 +409,9 @@ function Buwic.writeColor3(self: Buwic, color: Color3)
 	self._cursor += 12
 end
 
+--- Writes a `Color3` to the `Buwic` but with `u8` components instead of
+--- floats. Colors written with this method are 1/4 the size of those written
+--- with `writeColor3` but components are truncuated to be between `0` and `1`.
 function Buwic.writeColor3uint8(self: Buwic, color: Color3)
 	resizeIfNeeded(self, 3)
 	local b, c = self._buffer, self._cursor
@@ -402,6 +421,8 @@ function Buwic.writeColor3uint8(self: Buwic, color: Color3)
 	self._cursor += 3
 end
 
+--- Writes a `ColorSequence` to the `Buwic`. The number of bytes this method
+--- writes is determined by the number of keypoints in the `ColorSequence`.
 function Buwic.writeColorSequence(self: Buwic, sequence: ColorSequence)
 	local keypoints = sequence.Keypoints
 	resizeIfNeeded(self, 4 + #keypoints * 16)
@@ -416,12 +437,18 @@ function Buwic.writeColorSequence(self: Buwic, sequence: ColorSequence)
 	self._cursor += (4 + #keypoints * 16)
 end
 
+--- Writes a `DateTime` to the `Buwic`.  This is equivalent to writing
+--- the `UnixTimestampMillis` of the `DateTime` as an `f64`.
 function Buwic.writeDateTime(self: Buwic, date: DateTime)
 	resizeIfNeeded(self, 8)
 	buffer.writef64(self._buffer, self._cursor, date.UnixTimestampMillis)
 	self._cursor += 8
 end
 
+--- Writes an `EnumItem` to the `Buwic`. This method writes the name of
+--- `enum`'s type as well as the value of `enum`, so it can be read without
+--- prior knowledge. However, this increases the overall written size
+--- dynamically.
 function Buwic.writeEnum(self: Buwic, enum: EnumItem)
 	local enumType = tostring(enum.EnumType)
 	resizeIfNeeded(self, #enumType + 6) -- 2 from prefix, 4 from enum value
@@ -433,6 +460,7 @@ function Buwic.writeEnum(self: Buwic, enum: EnumItem)
 	buffer.writestring(b, c + 6, enumType)
 end
 
+--- Writes a `Faces` to the `Buwic`.
 function Buwic.writeFaces(self: Buwic, faces: Faces)
 	resizeIfNeeded(self, 1)
 	-- Top, Left, Front, Bottom, Right, Back
@@ -449,6 +477,8 @@ function Buwic.writeFaces(self: Buwic, faces: Faces)
 	self._cursor += 1
 end
 
+--- Writes a `Font` to the `Buwic`. The number of bytes this method writes
+--- is determined by the length of the font's `Family` field.
 function Buwic.writeFont(self: Buwic, font: Font)
 	local family = font.Family
 	resizeIfNeeded(self, 6 + #family)
@@ -461,6 +491,7 @@ function Buwic.writeFont(self: Buwic, font: Font)
 	self._cursor += 6 + #family
 end
 
+--- Writes a `NumberRange` to the `Buwic`.
 function Buwic.writeNumberRange(self: Buwic, range: NumberRange)
 	resizeIfNeeded(self, 8)
 	local b, c = self._buffer, self._cursor
@@ -469,6 +500,8 @@ function Buwic.writeNumberRange(self: Buwic, range: NumberRange)
 	self._cursor += 8
 end
 
+--- Writes a `NumberSequence` to the `Buwic`. The number of bytes this method
+--- writes is determined by the number of keypoints in the `NumberSequence`.
 function Buwic.writeNumberSequence(self: Buwic, sequence: NumberSequence)
 	local keypoints = sequence.Keypoints
 	resizeIfNeeded(self, 4 + #keypoints * 12)
@@ -482,6 +515,7 @@ function Buwic.writeNumberSequence(self: Buwic, sequence: NumberSequence)
 	self._cursor += (4 + #keypoints * 12)
 end
 
+--- Writes a `PhysicalProperties` to the `Buwic`.
 function Buwic.writePhysicalProperties(self: Buwic, physicalProperties: PhysicalProperties)
 	resizeIfNeeded(self, 20)
 	local b, c = self._buffer, self._cursor
@@ -493,6 +527,7 @@ function Buwic.writePhysicalProperties(self: Buwic, physicalProperties: Physical
 	self._cursor += 20
 end
 
+--- Writes a `Ray` to the `Buwic`.
 function Buwic.writeRay(self: Buwic, ray: Ray)
 	resizeIfNeeded(self, 24)
 	local b, c = self._buffer, self._cursor
@@ -505,6 +540,7 @@ function Buwic.writeRay(self: Buwic, ray: Ray)
 	self._cursor += 24
 end
 
+--- Writes a `Rect` to the `Buwic`.
 function Buwic.writeRect(self: Buwic, rect: Rect)
 	resizeIfNeeded(self, 16)
 	local b, c = self._buffer, self._cursor
@@ -515,6 +551,7 @@ function Buwic.writeRect(self: Buwic, rect: Rect)
 	self._cursor += 16
 end
 
+--- Writes a `UDim` to the `Buwic`.
 function Buwic.writeUDim(self: Buwic, udim: UDim)
 	resizeIfNeeded(self, 8)
 	local b, c = self._buffer, self._cursor
@@ -523,6 +560,7 @@ function Buwic.writeUDim(self: Buwic, udim: UDim)
 	self._cursor += 8
 end
 
+--- Writes a `UDim2` to the `Buwic`.
 function Buwic.writeUDim2(self: Buwic, udim2: UDim2)
 	resizeIfNeeded(self, 16)
 	local b, c = self._buffer, self._cursor
@@ -533,6 +571,7 @@ function Buwic.writeUDim2(self: Buwic, udim2: UDim2)
 	self._cursor += 16
 end
 
+--- Writes a `Vector2` to the `Buwic`.
 function Buwic.writeVector2(self: Buwic, vector: Vector2)
 	resizeIfNeeded(self, 8)
 	local b, c = self._buffer, self._cursor
@@ -541,6 +580,7 @@ function Buwic.writeVector2(self: Buwic, vector: Vector2)
 	self._cursor += 8
 end
 
+--- Writes a `Vector2int16` to the `Buwic`.
 function Buwic.writeVector2int16(self: Buwic, vector: Vector2int16)
 	resizeIfNeeded(self, 4)
 	local b, c = self._buffer, self._cursor
@@ -549,6 +589,7 @@ function Buwic.writeVector2int16(self: Buwic, vector: Vector2int16)
 	self._cursor += 4
 end
 
+--- Writes a `Vector3` to the `Buwic`.
 function Buwic.writeVector3(self: Buwic, vector: Vector3)
 	resizeIfNeeded(self, 12)
 	local b, c = self._buffer, self._cursor
@@ -558,6 +599,7 @@ function Buwic.writeVector3(self: Buwic, vector: Vector3)
 	self._cursor += 12
 end
 
+--- Writes a `Vector3int16` to the `Buwic`.
 function Buwic.writeVector3int16(self: Buwic, vector: Vector3int16)
 	resizeIfNeeded(self, 6)
 	local b, c = self._buffer, self._cursor
