@@ -295,7 +295,11 @@ end
 function Buwic.writeCFrame(self: Buwic, cframe: CFrame)
 	resizeIfNeeded(self, 12 * 3)
 	local b, c = self._buffer, self._cursor
-	local x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22 = cframe:GetComponents()
+	--stylua: ignore
+	local x, y, z,
+		r00, r01, r02,
+		r10, r11, r12,
+		r20, r21, r22 = cframe:GetComponents()
 	buffer.writef32(b, c, x)
 	buffer.writef32(b, c + 4, y)
 	buffer.writef32(b, c + 8, z)
