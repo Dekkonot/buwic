@@ -561,8 +561,28 @@ function Buwic.readColor3uint8(self: Buwic): Color3
 	return color
 end
 
-function Buwic.readColorSequence(_self: Buwic): ColorSequence
-	error("unimplemented", 2)
+function Buwic.readColorSequence(self: Buwic): ColorSequence
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 4, "attempt to read ColorSequence out of bounds")
+	local n = buffer.readu32(b, c)
+	c += 4
+	assert(buffer.len(b) >= c + (n * 16), "attempt to read ColorSequence out of bounds")
+
+	local keypoints = table.create(n)
+	for i = 0, n - 1 do
+		keypoints[i + 1] = ColorSequenceKeypoint.new(
+			buffer.readf32(b, c + (i * 16)),
+			Color3.new(
+				buffer.readf32(b, c + 4 + (i * 16)),
+				buffer.readf32(b, c + 8 + (i * 16)),
+				buffer.readf32(b, c + 12 + (i * 16))
+			)
+		)
+	end
+
+	self._cursor += n * 16
+
+	return ColorSequence.new(keypoints)
 end
 
 function Buwic.readDateTime(self: Buwic): DateTime
@@ -642,11 +662,39 @@ function Buwic.readNumberRange(self: Buwic): NumberRange
 end
 
 function Buwic.readNumberSequence(self: Buwic): NumberSequence
-	error("unimplemented", 2)
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 4, "attempt to read NumberSequence out of bounds")
+	local n = buffer.readu32(b, c)
+	c += 4
+	assert(buffer.len(b) >= c + (n * 12), "attempt to read NumberSequence out of bounds")
+
+	local keypoints = table.create(n)
+	for i = 0, n - 1 do
+		keypoints[i + 1] = NumberSequenceKeypoint.new(
+			buffer.readf32(b, c + (i * 16)),
+			buffer.readf32(b, c + 4 + (i * 16)),
+			buffer.readf32(b, c + 8 + (i * 16))
+		)
+	end
+
+	self._cursor += n * 12
+
+	return NumberSequence.new(keypoints)
 end
 
 function Buwic.readPhysicalProperties(self: Buwic): PhysicalProperties
-	error("unimplemented", 2)
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 20, "attempt to read PhysicalProperties out of bounds")
+	local pp = PhysicalProperties.new(
+		buffer.readf32(b, c),
+		buffer.readf32(b, c + 4),
+		buffer.readf32(b, c + 8),
+		buffer.readf32(b, c + 12),
+		buffer.readf32(b, c + 16)
+	)
+	self._cursor += 20
+
+	return pp
 end
 
 function Buwic.readRay(self: Buwic): Ray
