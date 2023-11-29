@@ -500,23 +500,125 @@ end
 
 -- Roblox specific readers --
 
-function Buwic.readAxes(self: Buwic): Axes end
+function Buwic.readAxes(self: Buwic): Axes
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 1, "attempt to read Axes out of bounds")
+	local r = buffer.readu8(b, c)
+	self._cursor += 1
+	local axes = table.create(3)
+	if bit32.btest(r, 0b100) then
+		table.insert(axes, Enum.Axis.Z)
+	end
+	if bit32.btest(r, 0b010) then
+		table.insert(axes, Enum.Axis.Y)
+	end
+	if bit32.btest(r, 0b001) then
+		table.insert(axes, Enum.Axis.X)
+	end
 
-function Buwic.readBrickColor(self: Buwic): BrickColor end
+	return Axes.new(table.unpack(axes))
+end
 
-function Buwic.readCFrame(self: Buwic): CFrame end
+function Buwic.readBrickColor(self: Buwic): BrickColor
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 2, "attempt to read BrickColor out of bounds")
+	local color = BrickColor.new(buffer.readu16(b, c))
+	self._cursor += 2
 
-function Buwic.readColor3(self: Buwic): Color3 end
+	return color
+end
 
-function Buwic.readColor3uint8(self: Buwic): Color3 end
+function Buwic.readCFrame(self: Buwic): CFrame
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 48, "attempt to read CFrame out of bounds")
+	--stylua: ignore
+	local cf = CFrame.new(
+		buffer.readf32(b, c), buffer.readf32(b, c + 4), buffer.readf32(b, c + 8),
+		buffer.readf32(b, c + 12), buffer.readf32(b, c + 16), buffer.readf32(b, c + 20),
+		buffer.readf32(b, c + 24), buffer.readf32(b, c + 28), buffer.readf32(b, c + 32),
+		buffer.readf32(b, c + 36), buffer.readf32(b, c + 40), buffer.readf32(b, c + 44)
+	)
+	self._cursor += 48
 
-function Buwic.readColorSequence(self: Buwic): ColorSequence end
+	return cf
+end
 
-function Buwic.readDateTime(self: Buwic): DateTime end
+function Buwic.readColor3(self: Buwic): Color3
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 12, "attempt to read Color3 out of bounds")
+	local color = Color3.fromRGB(buffer.readf32(b, c), buffer.readf32(b, c + 4), buffer.readf32(b, c + 8))
+	self._cursor += 12
 
-function Buwic.readEnum(self: Buwic): EnumItem end
+	return color
+end
 
-function Buwic.readFaces(self: Buwic): Faces end
+function Buwic.readColor3uint8(self: Buwic): Color3
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 3, "attempt to read Color3uint8 out of bounds")
+	local color = Color3.fromRGB(buffer.readu8(b, c), buffer.readu8(b, c + 1), buffer.readu8(b, c + 2))
+	self._cursor += 3
+
+	return color
+end
+
+function Buwic.readColorSequence(_self: Buwic): ColorSequence
+	error("unimplemented", 2)
+end
+
+function Buwic.readDateTime(self: Buwic): DateTime
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 8, "attempt to read DateTime out of bounds")
+	local date = DateTime.fromUnixTimestampMillis(buffer.readf64(b, c))
+	self._cursor += 8
+
+	return date
+end
+
+function Buwic.readEnum(self: Buwic): EnumItem
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 6, "attempt to read DateTime out of bounds")
+	local value = buffer.readu32(b, c)
+	local nameLen = buffer.readu16(b, c + 4)
+	assert(buffer.len(b) >= c + 6 + nameLen, "attempt to read DateTime out of bounds")
+	local name = buffer.readstring(b, c + 6, nameLen)
+	self._cursor += 6 + nameLen
+
+	local enum = (Enum :: any)[name]
+	for _, variant: EnumItem in enum:GetEnumItems() do
+		if variant.Value == value then
+			return variant
+		end
+	end
+	error(string.format("no EnumItem with Value %d found as a member of %s", value, name), 2)
+end
+
+function Buwic.readFaces(self: Buwic): Faces
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 1, "attempt to read Faces out of bounds")
+	local r = buffer.readu8(b, c)
+	self._cursor += 1
+	local faces = table.create(6)
+	if bit32.btest(r, 0b100_000) then
+		table.insert(faces, Enum.NormalId.Top)
+	end
+	if bit32.btest(r, 0b010_000) then
+		table.insert(faces, Enum.NormalId.Left)
+	end
+	if bit32.btest(r, 0b001_000) then
+		table.insert(faces, Enum.NormalId.Front)
+	end
+	if bit32.btest(r, 0b000_100) then
+		table.insert(faces, Enum.NormalId.Bottom)
+	end
+	if bit32.btest(r, 0b000_010) then
+		table.insert(faces, Enum.NormalId.Right)
+	end
+	if bit32.btest(r, 0b000_001) then
+		table.insert(faces, Enum.NormalId.Back)
+	end
+
+	return Faces.new(table.unpack(faces))
+end
 
 function Buwic.readFont(self: Buwic): Font
 	local b, c = self._buffer, self._cursor
@@ -530,26 +632,103 @@ function Buwic.readFont(self: Buwic): Font
 	return Font.new(family, weight, style)
 end
 
-function Buwic.readNumberRange(self: Buwic): NumberRange end
+function Buwic.readNumberRange(self: Buwic): NumberRange
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 8, "attempt to read NumberRange out of bounds")
+	local range = NumberRange.new(buffer.readf32(b, c), buffer.readf32(b, c + 4))
+	self._cursor += 8
 
-function Buwic.readNumberSequence(self: Buwic): NumberSequence end
+	return range
+end
 
-function Buwic.readPhysicalProperties(self: Buwic): PhysicalProperties end
+function Buwic.readNumberSequence(self: Buwic): NumberSequence
+	error("unimplemented", 2)
+end
 
-function Buwic.readRay(self: Buwic): Ray end
+function Buwic.readPhysicalProperties(self: Buwic): PhysicalProperties
+	error("unimplemented", 2)
+end
 
-function Buwic.readRect(self: Buwic): Rect end
+function Buwic.readRay(self: Buwic): Ray
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 24, "attempt to read Ray out of bounds")
+	local ray = Ray.new(
+		Vector3.new(buffer.readf32(b, c), buffer.readf32(b, c + 4), buffer.readf32(b, c + 8)),
+		Vector3.new(buffer.readf32(b, c + 12), buffer.readf32(b, c + 16), buffer.readf32(b, c + 20))
+	)
+	self._cursor += 24
 
-function Buwic.readUDim(self: Buwic): UDim end
+	return ray
+end
 
-function Buwic.readUDim2(self: Buwic): UDim2 end
+function Buwic.readRect(self: Buwic): Rect
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 16, "attempt to read Rect out of bounds")
+	local rect =
+		Rect.new(buffer.readf32(b, c), buffer.readf32(b, c + 4), buffer.readf32(b, c + 8), buffer.readf32(b, c + 12))
+	self._cursor += 12
 
-function Buwic.readVector2(self: Buwic): Vector2 end
+	return rect
+end
 
-function Buwic.readVector2int16(self: Buwic): Vector2int16 end
+function Buwic.readUDim(self: Buwic): UDim
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 8, "attempt to read UDim out of bounds")
+	local udim = UDim.new(buffer.readf32(b, c), buffer.readi32(b, c + 4))
+	self._cursor += 8
 
-function Buwic.readVector3(self: Buwic): Vector3 end
+	return udim
+end
 
-function Buwic.readVector3int16(self: Buwic): Vector3int16 end
+function Buwic.readUDim2(self: Buwic): UDim2
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 16, "attempt to read UDim2 out of bounds")
+	--stylua: ignore
+	local udim2 = UDim2.new(
+		buffer.readf32(b, c),
+		buffer.readi32(b, c + 4),
+		buffer.readf32(b, c + 8),
+		buffer.readi32(b, c + 12)
+	)
+	self._cursor += 16
+
+	return udim2
+end
+
+function Buwic.readVector2(self: Buwic): Vector2
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 8, "attempt to read Vector2 out of bounds")
+	local vector = Vector2.new(buffer.readf32(b, c), buffer.readf32(b, c + 4))
+	self._cursor += 8
+
+	return vector
+end
+
+function Buwic.readVector2int16(self: Buwic): Vector2int16
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 4, "attempt to read Vector2int16 out of bounds")
+	local vector = Vector2int16.new(buffer.readi16(b, c), buffer.readi16(b, c + 2))
+	self._cursor += 4
+
+	return vector
+end
+
+function Buwic.readVector3(self: Buwic): Vector3
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 12, "attempt to read Vector3 out of bounds")
+	local vector = Vector3.new(buffer.readf32(b, c), buffer.readf32(b, c + 4), buffer.readf32(b, c + 8))
+	self._cursor += 8
+
+	return vector
+end
+
+function Buwic.readVector3int16(self: Buwic): Vector3int16
+	local b, c = self._buffer, self._cursor
+	assert(buffer.len(b) >= c + 6, "attempt to read Vector3int16 out of bounds")
+	local vector = Vector3int16.new(buffer.readi16(b, c), buffer.readi16(b, c + 2), buffer.readi16(b, c + 4))
+	self._cursor += 6
+
+	return vector
+end
 
 return Buwic
