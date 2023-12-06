@@ -69,4 +69,4 @@ f64_test:writef64(00)
 f64_test:writef64(00)
 assert(f64_test:capacity() == 16, "writef64 did not expand buffer appropriately")
 
-return true
+return {}

@@ -213,4 +213,4 @@ i32_test:writei32(00)
 i32_test:writei32(00)
 assert(i32_test:capacity() == 8, "writei32 did not expand buffer appropriately")
 
-return true
+return {}
