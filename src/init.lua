@@ -37,7 +37,7 @@ local function resizeIfNeeded(buwic: Buwic, more: number)
 		-- local new = buffer.create(2 ^ (math.floor(math.log(len + more, 2)) + 1))
 		local new = buffer.create(len + more)
 		-- print(`resizing to {buffer.len(new)} from {len}`)
-		buffer.copy(new, 0, buwic._buffer, 0, len)
+		buffer.copy(new, 0, buwic._buffer)
 		buwic._buffer = new
 	end
 end
@@ -90,7 +90,7 @@ end
 --- references to it, so it may be used freely after this function.
 function Buwic.fromBuffer(buff: buffer): Buwic
 	local self = Buwic.new(buffer.len(buff))
-	buffer.copy(self._buffer, 0, buff, buffer.len(buff))
+	buffer.copy(self._buffer, 0, buff)
 	return self
 end
 
@@ -130,7 +130,7 @@ function Buwic.reserve(self: Buwic, more: number)
 	local len = buffer.len(self._buffer)
 	local new = buffer.create(len + more)
 	-- print(`resizing to {buffer.len(new)} from {len}`)
-	buffer.copy(new, 0, self._buffer, 0, len)
+	buffer.copy(new, 0, self._buffer)
 	self._buffer = new
 end
 
