@@ -17,11 +17,14 @@ local NUMBER_TO_FONTSTYLE = {}
 --- A map of FontWeight variants to their `Value` field
 local NUMBER_TO_FONTWEIGHT = {}
 
-for _, item: Enum.FontStyle in Enum.FontStyle:GetEnumItems() do
-	NUMBER_TO_FONTSTYLE[item.Value] = item
-end
-for _, item: Enum.FontWeight in Enum.FontWeight:GetEnumItems() do
-	NUMBER_TO_FONTWEIGHT[item.Value] = item
+-- This is a basic logic check for Roblox
+if Enum ~= nil then
+	for _, item: Enum.FontStyle in Enum.FontStyle:GetEnumItems() do
+		NUMBER_TO_FONTSTYLE[item.Value] = item
+	end
+	for _, item: Enum.FontWeight in Enum.FontWeight:GetEnumItems() do
+		NUMBER_TO_FONTWEIGHT[item.Value] = item
+	end
 end
 
 --- Convenience function for dynamically resizing the buffer.
