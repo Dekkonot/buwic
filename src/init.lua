@@ -61,6 +61,11 @@ local function readu24(buwic: Buwic): number
 	return bit32.lshift(buffer.readu8(buwic._buffer, buwic._cursor - 1), 16) + n
 end
 
+--- Returns whether the provided argument argument is a `Buwic`.
+function Buwic.isA(obj: any): boolean
+	return getmetatable(obj) == Buwic
+end
+
 --- Constructs a new `Buwic` with the provided capacity, or 0 if none is
 --- provided.
 function Buwic.new(capacity: number?): Buwic
