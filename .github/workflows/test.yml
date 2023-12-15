@@ -1,0 +1,27 @@
+name: Tests
+on:
+  push:
+    paths: '**.luau'
+    branches: 'main'
+  pull_request:
+    paths: '**.luau'
+  workflow_dispatch:
+    
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 'Install Luau'
+        run: |
+          gh release download --repo luau-lang/luau --pattern luau-ubuntu.zip
+          unzip luau-ubuntu.zip
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: 'Test'
+        run: ./luau tests/init.luau
+
+      - name: 'Test (Codegen)'
+        run: ./luau tests/init.luau --codegen
