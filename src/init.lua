@@ -1,6 +1,11 @@
 --!strict
 --!optimize 2
 
+if string.sub(_VERSION, 1, 4) == "Lune" then
+	--selene: allow(incorrect_standard_library_use)
+	Enum = (require :: any)("@lune/roblox").Enum
+end
+
 local Buwic = {}
 Buwic.__index = Buwic
 
