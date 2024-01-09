@@ -129,6 +129,24 @@ function Buwic.toString(self: Buwic): string
 	return buffer.readstring(self._buffer, 0, buffer.len(self._buffer))
 end
 
+--- Converts the `Buwic` to a buffer.
+--- The returned buffer is not the underlying buffer used by the Buwic
+--- and is instead a clone of it. To get the data copy-free, use
+--- `getRawBuffer` instead.
+function Buwic.toBuffer(self: Buwic): buffer
+	local copy = buffer.create(buffer.len(self._buffer))
+	buffer.copy(copy, 0, self._buffer)
+	return copy
+end
+
+--- Returns the underlying buffer for the `Buwic`.
+--- Due to the resizing done by the `Buwic`, there is no guarantee that the
+--- returned buffer will always be the one stored inside the buffer.
+--- It is advised that this method be viewed as 'deconstructing' the `Buwic`.
+function Buwic.getRawBuffer(self: Buwic): buffer
+	return self._buffer
+end
+
 --- Returns how many bytes the `Buwic` is currently capable of storing.
 --- The `Buwic` will still resize from this point.
 function Buwic.capacity(self: Buwic): number
