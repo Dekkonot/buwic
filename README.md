@@ -54,7 +54,9 @@ All of these functions are documented briefly below. For more detailed documenta
 
 ### Constructors
 
-> `Buwic.new(capacity: number?): Buwic`
+> ```luau
+> Buwic.new(capacity: number?): Buwic
+> ```
 
 Creates a new `Buwic`. If `capacity` is provided, it is the initial size in bytes that the `Buwic` can hold without resizing. Otherwise, the `Buwic` starts able to hold `0` bytes.
 
