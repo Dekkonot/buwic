@@ -23,14 +23,39 @@ The API is below:
 
 ## API
 
-TODO: API
+The API for this module can be roughly divided into three categories: write methods, read methods, and everything else. An API for reading and writing is exposed for the following types:
+- `u8`, `u16`, `u24`, `u32`
+- `i8`, `i16`, `i24`, `i32`
+- `f32`, `f64`
+- `bool`, bitfields
+- Raw byte sequences, as both a `string` and a `buffer`
+- Strings prefixed with their length
+<!--TODO Bitfields  -->
 
-- read/write `u8`, `u16`, `u24`, `u32`
-- read/write `i8`, `i16`, `i24`, `i32`
-- read/write `f32`, `f64`
+Additionally, the following Roblox data types are included:
+- `CFrame`, `Vector3`, `Vector2`, `Vector2int16`, `Vector3int16`
+- `UDim`, `UDim2`, `Rect`, `Ray`
+- `BrickColor`, `Color3`, `Color3` as a `u24`
+- `NumberRange`, `NumberSequence`, `ColorSequence`
+- `Enum`
+- `DateTime`, `Font`, `PhysicalProperties`
+- `Axes`, `Faces`
 
-- read/write length prefixed string
-- read/write 'raw string'
-- read/write buffer
+The format used by each Roblox data type is documented [**here**](roblox_spec.md) for convenience.
 
-- Roblox stuff
+Beyond the basic read and write functions, there's several methods provided for basic manipulation of a Buwic. They are:
+- `Buwic.new`, `Buwic.fromString`, `Buwic.fromBuffer`
+- `Buwic.isA`
+- `toString`, `toBuffer`, `getRawBuffer`
+- `getCursor`, `setCursor`
+- `capacity`, `reserve`, `shrink`
+
+All of these functions are documented briefly below. For more detailed documentation, see [blank]
+
+### Constructors
+
+> `Buwic.new(capacity: number?): Buwic`
+
+Creates a new `Buwic`. If `capacity` is provided, it is the initial size in bytes that the `Buwic` can hold without resizing. Otherwise, the `Buwic` starts able to hold `0` bytes.
+
+This function errors if `capacity` is less than 0, not a real number, or greater than the maximum size of a `buffer`.
