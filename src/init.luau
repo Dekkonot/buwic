@@ -17,6 +17,24 @@ export type Buwic = typeof(setmetatable(
 	Buwic
 ))
 
+local EPSILON = 1e-6
+
+-- If we wanted to support non-orthonormal CFrames, I'd recommend a
+-- special value of 0b1000_0000.
+
+--- A sentinel value indicating an orthonormal but non-special CFrame
+local NON_ALIGNED_CFRAME = 0b0100_0000
+
+--- A map of NormalId variants to the unit vector for that direction.
+local NORMAL_ID_TO_UNIT: { Vector3 } = {
+	[Enum.NormalId.Top.Value] = Vector3.FromNormalId(Enum.NormalId.Top),
+	[Enum.NormalId.Left.Value] = Vector3.FromNormalId(Enum.NormalId.Left),
+	[Enum.NormalId.Front.Value] = Vector3.FromNormalId(Enum.NormalId.Front),
+	[Enum.NormalId.Bottom.Value] = Vector3.FromNormalId(Enum.NormalId.Bottom),
+	[Enum.NormalId.Right.Value] = Vector3.FromNormalId(Enum.NormalId.Right),
+	[Enum.NormalId.Back.Value] = Vector3.FromNormalId(Enum.NormalId.Back),
+}
+
 --- A map of FontStyle variants to their `Value` field
 local NUMBER_TO_FONTSTYLE = {}
 --- A map of FontWeight variants to their `Value` field
@@ -30,6 +48,11 @@ if Enum ~= nil then
 	for _, item: Enum.FontWeight in Enum.FontWeight:GetEnumItems() do
 		NUMBER_TO_FONTWEIGHT[item.Value] = item
 	end
+end
+
+local function approxEq(a: number, b: number): boolean
+	-- abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+	return math.abs(a - b) <= math.max(EPSILON * math.max(math.abs(a), math.abs(b)), EPSILON)
 end
 
 --- Convenience function for dynamically resizing the buffer.
@@ -444,30 +467,53 @@ function Buwic.writeBrickColor(self: Buwic, color: BrickColor)
 	self._cursor += 2
 end
 
---- Writes a `CFrame` to the `Buwic`.
+--- Writes a `CFrame` to the `Buwic`. The CFrame **must** be
+--- orthonormalized for this method to work as expected.
 ---
---- Writes `48` bytes.
+--- Writes either 13 or 25 bytes depending upon whether the CFrame is
+--- axis-aligned or not.
 function Buwic.writeCFrame(self: Buwic, cframe: CFrame)
-	resizeIfNeeded(self, 48)
-	local b, c = self._buffer, self._cursor
-	--stylua: ignore
-	local x, y, z,
-		r00, r01, r02,
-		r10, r11, r12,
-		r20, r21, r22 = cframe:GetComponents()
-	buffer.writef32(b, c, x)
-	buffer.writef32(b, c + 4, y)
-	buffer.writef32(b, c + 8, z)
-	buffer.writef32(b, c + 12, r00)
-	buffer.writef32(b, c + 16, r01)
-	buffer.writef32(b, c + 20, r02)
-	buffer.writef32(b, c + 24, r10)
-	buffer.writef32(b, c + 28, r11)
-	buffer.writef32(b, c + 32, r12)
-	buffer.writef32(b, c + 36, r20)
-	buffer.writef32(b, c + 40, r21)
-	buffer.writef32(b, c + 44, r22)
-	self._cursor += 12 * 3
+	local pos = cframe.Position
+	local xColumn = cframe.RightVector
+	local yColumn = cframe.UpVector
+
+	local xId, yId = 6, 6
+	for normalId, unit in NORMAL_ID_TO_UNIT do
+		if approxEq(unit:Dot(xColumn), 1) then
+			xId = normalId
+		end
+		if approxEq(unit:Dot(yColumn), 1) then
+			yId = normalId
+		end
+	end
+	if xId * yId ~= 36 and xId ~= yId then
+		-- It's axis-aligned so we can write a single byte for rotation
+		resizeIfNeeded(self, 13)
+		local b, c = self._buffer, self._cursor
+		buffer.writef32(b, c, pos.X)
+		buffer.writef32(b, c + 4, pos.Y)
+		buffer.writef32(b, c + 8, pos.Z)
+		buffer.writeu8(b, c + 9, bit32.lshift(xId, 3) + yId)
+		self._cursor += 13
+	else
+		-- It's orthonormal, but isn't axis-aligned so we write the axis-angle form.
+		resizeIfNeeded(self, 25)
+		local axis, angle = cframe:ToAxisAngle()
+		local b, c = self._buffer, self._cursor
+		buffer.writef32(b, c, pos.X)
+		buffer.writef32(b, c + 4, pos.Y)
+		buffer.writef32(b, c + 8, pos.Z)
+		buffer.writeu8(b, c + 9, NON_ALIGNED_CFRAME)
+
+		-- It is slightly faster in native codegen to mutliply each component
+		-- individually. That said, I anticipate that getting faster eventually
+		-- so we're doing it the easy to read way.
+		axis *= angle
+		buffer.writef32(b, c + 13, axis.X)
+		buffer.writef32(b, c + 17, axis.Y)
+		buffer.writef32(b, c + 21, axis.Z)
+		self._cursor += 25
+	end
 end
 
 --- Writes a `Color3` to the `Buwic`.
@@ -751,20 +797,27 @@ end
 
 --- Reads a `CFrame` from the `Buwic`.
 ---
---- Reads `48` bytes.
+--- Reads a variable amount of bytes. See `writeCFrame` for details.
 function Buwic.readCFrame(self: Buwic): CFrame
 	local b, c = self._buffer, self._cursor
-	assert(buffer.len(b) >= c + 48, "attempt to read CFrame out of bounds")
-	--stylua: ignore
-	local cf = CFrame.new(
-		buffer.readf32(b, c), buffer.readf32(b, c + 4), buffer.readf32(b, c + 8),
-		buffer.readf32(b, c + 12), buffer.readf32(b, c + 16), buffer.readf32(b, c + 20),
-		buffer.readf32(b, c + 24), buffer.readf32(b, c + 28), buffer.readf32(b, c + 32),
-		buffer.readf32(b, c + 36), buffer.readf32(b, c + 40), buffer.readf32(b, c + 44)
-	)
-	self._cursor += 48
+	assert(buffer.len(b) >= c + 13, "attempt to read CFrame out of bounds")
+	local pos = Vector3.new(buffer.readf32(b, c), buffer.readf32(b, c + 4), buffer.readf32(b, c + 8))
+	local id = buffer.readu8(b, c + 9)
 
-	return cf
+	if id == NON_ALIGNED_CFRAME then
+		assert(buffer.len(b) >= c + 25, "attempt to read CFrame out of bounds")
+		local axis = Vector3.new(buffer.readf32(b, c + 13), buffer.readf32(b, c + 17), buffer.readf32(b, c + 21))
+		self._cursor += 25
+
+		return CFrame.fromAxisAngle(axis, axis.Magnitude) + pos
+	else
+		local xColumn = NORMAL_ID_TO_UNIT[bit32.rshift(id, 3)]
+		local yColumn = NORMAL_ID_TO_UNIT[bit32.band(id, 0b111)]
+		local zColumn = xColumn:Cross(yColumn)
+		self._cursor += 13
+
+		return CFrame.fromMatrix(pos, xColumn, yColumn, zColumn)
+	end
 end
 
 --- Reads a `Color3` from the `Buwic`.

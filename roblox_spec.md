@@ -38,7 +38,24 @@ A [`BrickColor`][BrickColor_DT] is written as a single `u16`. This value represe
 
 ## CFrame
 
-A [`CFrame`][CFrame_DT] is written as 12 `f32` values. These values represent the components of the CFrame in the following order: `X`, `Y`, `Z`, `R00`, `R01`, `R02`, `R10`, `R11`, `R12`, `R20`, `R21`, `R22`.
+A [`CFrame`][CFrame_DT] is written in three parts. First, three `f32` values are written representing the `X`, `Y`, and `Z` components of the `CFrame`'s position. Then, an ID is written representing the rotation of the CFrame. This ID has two different meanings:
+
+### Orthonormalized CFrame, Axis-Aligned
+
+If the `CFrame` is [orthonormal][Orthogonality_Wiki] and also aligned to the axes, this ID is a compression of the rotation matrix:
+
+- The lowest three bits represent the Y-column/UpVector of the `CFrame`
+- The next 3 bits represent the X-column/RightVector of the `CFrame`
+
+These values are both numbers for a variant of the `NormalId` enum, which can be turned into a unit vector using `Vector3.fromNormalId`. The Z-column/LookVector is not written but may be derived by taking the cross product between the X-column and Y-column.
+
+### Orthonormalized CFrame, not Axis-Aligned
+
+If the `CFrame` is orthonormal but not aligned to the axes, the ID is instead `0x40`. In this case, the rotation matrix is written as three `f32` values representing the axis-angle representation of the rotation as a `Vector3`, where the magnitude is the angle and the unit form is the axis.
+
+### Non-Orthonormalized CFrame
+
+For performance, non-orthonormalized CFrames are not supported. They can instead be manually written as twelve `f32` values.
 
 ## Color3
 
@@ -162,3 +179,5 @@ A [`Vector3int16`][Vector3int16_DT] is written as three `i16` values representin
 [Vector3int16_DT]: https://create.roblox.com/docs/reference/engine/datatypes/Vector3int16
 
 [Material_E]: https://create.roblox.com/docs/reference/engine/enums/Material
+
+[Orthogonality_Wiki]: https://en.wikipedia.org/wiki/Orthogonality
